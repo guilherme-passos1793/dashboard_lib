@@ -16,5 +16,5 @@ setup(
     author_email='guilherme.passos1793@gmail.com',
     license='unlicense',
     packages=['dashboard_lib'],
-    zip_safe=False, dependencies=install_requires
+    zip_safe=False, install_requires =install_requires
 )
