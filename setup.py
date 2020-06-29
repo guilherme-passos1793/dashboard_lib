@@ -6,7 +6,7 @@ install_requires = [] # Examples: ["gunicorn", "docutils>=0.3", "lxml==0.5a7"]
 if os.path.isfile(requirementPath):
     with open(requirementPath) as f:
         install_requires = f.read().splitlines()
-
+print(install_requires)
 setup(
     name='dashboard_lib',
     version='0.0.1',
@@ -16,5 +16,5 @@ setup(
     author_email='guilherme.passos1793@gmail.com',
     license='unlicense',
     packages=['dashboard_lib'],
-    zip_safe=False, dependency_links =install_requires
+    zip_safe=False, install_requires=install_requires
 )
