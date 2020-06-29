@@ -1,5 +1,5 @@
-import dashboarding.app_initialization as ai
-import dashboarding.app_page as ap
+import dashboard_lib.app_initialization as ai
+import dashboard_lib.app_page as ap
 from threading import Thread
 import dash_html_components as html
 import dash_core_components as dcc

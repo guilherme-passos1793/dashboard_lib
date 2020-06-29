@@ -1,4 +1,4 @@
-from dashboarding import app_page as ap
+from dashboard_lib import app_page as ap
 import dash_html_components as html
 import dash_core_components as dcc
 from plotly import graph_objects as go

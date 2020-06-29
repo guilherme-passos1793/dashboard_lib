@@ -8,6 +8,6 @@ setup(
     author='Guilherme Passos',
     author_email='guilherme.passos1793@gmail.com',
     license='unlicense',
-    packages=['dashboarding'],
+    packages=['dashboard_lib'],
     zip_safe=False
 )
