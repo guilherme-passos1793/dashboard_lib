@@ -212,8 +212,10 @@ def generate_table_selectable(dataframe, title, id_table='', max_height='210px',
         html.Div(children=[
             html.Strong(title, style={'horizontal-align': 'center', 'vertical-align': 'top'}),
             html.Div(dash_table.DataTable(columns=[
-                {"name": i, "id": i, 'type': TYPES[dataframe[i].ftype],
-                 'format': FORMATS[dataframe[i].ftype]}
+                {"name": i, "id": i,
+                 # 'type': TYPES[dataframe[i].ftype],
+                 # 'format': FORMATS[dataframe[i].ftype]
+                 }
                 for i in dataframe.columns],
 
                 data=dataframe.to_dict('records'),
