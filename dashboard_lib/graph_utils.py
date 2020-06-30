@@ -1,14 +1,8 @@
 # import matplotlib.pyplot as plt
-import datetime
-import os
-
-import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
 import dash_table.FormatTemplate as FormatTemplate
-import pandas as pd
-import plotly.graph_objs as go
-from helpers import get_sql_xp
+
 import math
 SIZE_DIV_CHART = 200
 SIZE_CHART = 196-4
