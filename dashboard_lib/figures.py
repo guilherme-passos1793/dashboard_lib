@@ -54,5 +54,11 @@ class Chart():
             ax.set_ylim(ymin=ymin, ymax=max)
 
     def get_layout(self):
-        layout = {}
+        layout = {
+            'barmode': 'group',
+            'hovermode': 'x',
+            'legend': {'orientation': 'h'},
+            'yaxis2': {'anchor': 'x', 'overlaying': 'y', 'side': 'right'},
+            'yaxis3': {'anchor': 'x', 'overlaying': 'y', 'side': 'right'}
+        }
         return layout
