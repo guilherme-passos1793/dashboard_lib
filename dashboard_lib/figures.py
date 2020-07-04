@@ -24,6 +24,8 @@ class Chart():
                 self.fig.add_scatter(x=dados[1], y=dados[2], yaxis=eixo_y, marker={'color': cor})
             elif tipo == 'Pontos':
                 self.fig.add_scatter(x=dados[1], y=dados[2], yaxis=eixo_y, marker={'color': cor}, mode='markers')
+            elif tipo == 'Pizza':
+                self.fig.add_pie(labels=dados[1], values=dados[2])
             self.fig.update_layout(self.get_layout())
         else:
             if len(self.fig.axes) > 0:
@@ -41,6 +43,8 @@ class Chart():
                 ax.plot(dados[1], dados[2], color=cor)
             elif tipo == 'Pontos':
                 ax.scatter(dados[1], dados[2], color=cor)
+            elif tipo == 'Pizza':
+                ax.pie(labels=dados[1], values=dados[2], colors=cor)
         return self.fig
 
     def altera_limites_eixo(self, eixo_y='y', ymin=None, max=None):

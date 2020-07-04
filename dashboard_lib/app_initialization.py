@@ -5,11 +5,15 @@ import dash_core_components as dcc
 import dash_html_components as html
 import webbrowser
 from threading import Thread
+
 print(os.getcwd())
 
 
-class Application():
-    def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None, title='My app', basic_layout=html.Div([dcc.Location(id='url', refresh=False),html.Div(id='main_div')]), page_div_id='main_div', url_id='url'):
+class Application:
+    def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
+                 title='My app',
+                 basic_layout=html.Div([dcc.Location(id='url', refresh=False), html.Div(id='main_div')]),
+                 page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export')):
         self.app = dash.Dash(__name__, assets_folder=assets_folder)
         self.app.layout = basic_layout
         self.addr = host
@@ -48,4 +52,3 @@ class Application():
                 return self.pages[path]
             else:
                 return ''
-
