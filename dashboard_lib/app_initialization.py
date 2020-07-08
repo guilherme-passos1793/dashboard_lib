@@ -15,6 +15,7 @@ class Application:
                  basic_layout=html.Div([dcc.Location(id='url', refresh=False), html.Div(id='main_div')]),
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export')):
         self.app = dash.Dash(__name__, assets_folder=assets_folder)
+        self.app.title = title
         self.app.layout = basic_layout
         self.addr = host
         self.pages = {}
@@ -22,7 +23,8 @@ class Application:
         self.url_id = url_id
 
     def start(self):
-        self.app.run_server(host=self.addr.split(':')[0], port=os.getenv("PORT", int(self.addr.split(':')[1])))
+        self.app.run_server()
+        # self.app.run_server(host=self.addr.split(':')[0], port=os.getenv("PORT", int(self.addr.split(':')[1])))
 
     def open(self):
         webbrowser.open('http://' + self.addr)
