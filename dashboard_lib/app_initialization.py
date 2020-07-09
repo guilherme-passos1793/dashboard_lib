@@ -13,7 +13,7 @@ class Application:
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
                  basic_layout=html.Div([dcc.Location(id='url', refresh=False), html.Div(id='main_div')]),
-                 page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export')):
+                 page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'), theme=dbc.themes.BOOTSTRAP):
         """
 
         :param host:
@@ -26,7 +26,7 @@ class Application:
         :param url_id:
         :param export_file_path:
         """
-        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
+        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme], suppress_callback_exceptions=True)
         self.app.title = title
         self.app.layout = basic_layout
         self.addr = host
