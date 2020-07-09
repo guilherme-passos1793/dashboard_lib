@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import webbrowser
 from threading import Thread
-
+import dash_bootstrap_components as dbc
 print(os.getcwd())
 
 
@@ -14,7 +14,7 @@ class Application:
                  title='My app',
                  basic_layout=html.Div([dcc.Location(id='url', refresh=False), html.Div(id='main_div')]),
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export')):
-        self.app = dash.Dash(__name__, assets_folder=assets_folder)
+        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.app.title = title
         self.app.layout = basic_layout
         self.addr = host
@@ -30,7 +30,7 @@ class Application:
         webbrowser.open('http://' + self.addr)
 
     def start_and_open(self):
-        self.set_page_callback()
+        # self.set_page_callback()
 
         t1 = Thread(target=self.start)
         print("##########")
