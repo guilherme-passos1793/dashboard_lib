@@ -131,8 +131,8 @@ STYLE_HEAD2 = {
 
     # 'overflow': 'fragments',
 }
-def generate_table_selectable(dataframe, title, id_table='', max_height='210px', selectable='multi', filt='none',
-                              sor='none', min_width='0px', tooltips=[], style_cells=CELL_STYLES, style_head=STYLE_HEAD,
+def generate_table_selectable(dataframe, title, id_table='', max_height='650px', selectable='multi', filt='none',
+                              sor='none', tooltips=[], style_cells=CELL_STYLES, style_head=STYLE_HEAD,
                               fixed_cols=0):
     # print(create_conditional_style(dataframe))
     out = html.Div([html.Div([
