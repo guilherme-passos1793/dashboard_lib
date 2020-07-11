@@ -68,7 +68,7 @@ def create_conditional_style(df):
         elif name_length == 0 or math.isnan(name_length):
             pixel = 50
         else:
-            pixel = 30 + round(name_length * PIXEL_FOR_CHAR)
+            pixel = 40 + round(name_length * PIXEL_FOR_CHAR)
 
 
         pixel = str(pixel) + "px"
@@ -90,105 +90,32 @@ def number(decimals, sign=FormatTemplate.Sign.default, group=FormatTemplate.Grou
     )
 
 
-TYPES = {'int64:dense': 'numeric',
-         'uint64:dense': 'numeric',
-         'int32:dense': 'numeric',
-         'uint32:dense': 'numeric',
-         'float64:dense': 'numeric',
-         'float32:dense': 'numeric',
+TYPES = {'int64': 'numeric',
+         'uint64': 'numeric',
+         'int32': 'numeric',
+         'uint32': 'numeric',
+         'float64': 'numeric',
+         'float32': 'numeric',
          'double': 'numeric',
-         'object:dense': 'text',
-         'bool:dense': 'bool',
-         'datetime64[ns]:dense': 'datetime'
+         'object': 'text',
+         'bool': 'bool',
+         'datetime64[ns]': 'datetime'
          }
-FORMATS = {'int64:dense': number(0, group=FormatTemplate.Group.no),
-           'uint64:dense': number(0, group=FormatTemplate.Group.no),
-           'float64:dense': number(2),
-           'int32:dense': number(0, group=FormatTemplate.Group.no),
-           'float32:dense': number(2),
+FORMATS = {'int64': number(0, group=FormatTemplate.Group.no),
+           'uint64': number(0, group=FormatTemplate.Group.no),
            'float64': number(2),
-           'int64': number(2, group=FormatTemplate.Group.no),
-           'uint64': number(2, group=FormatTemplate.Group.no),
+           'int32': number(0, group=FormatTemplate.Group.no),
+           'float32': number(2),
            'double': number(2),
-           'object:dense': '',
-           'bool:dense': '',
-           'datetime64[ns]:dense': ''
+           'object': '',
+           'bool': '',
+           'datetime64[ns]': ''
 
            }
-CELL_STYLES = [
-    {
-        'if': {'column_id': 'Núm ops'},
-        'width': '80px'
-    },
-    {
-        'if': {'column_id': 'Cliente'},
-        'width': '80px'
-    },
-    {
-        'if': {'column_id': 'Cod assessor'},
-        'width': '80px'
-    },
-    {
-        'if': {'column_id': 'Sexo'},
-        'width': '80px'
-    },
-    {
-        'if': {'column_id': 'Tipo pessoa'},
-        'width': '100px'
-    },
-    {
-        'if': {'column_id': 'Idade'},
-        'width': '70px'
-    },
-    {
-        'if': {'column_id': 'Suitability'},
-        'width': '100px'
-    },
-    {
-        'if': {'column_id': 'Outros'},
-        'width': '70px'
-    },
-    {
-        'if': {'column_id': 'Cadastro (meses)'},
-        'width': '80px'
-    },
-    {
-        'if': {'column_id': 'Primeiro aporte (meses)'},
-        'width': '80px'
-    },
-
-    {
-        'if': {'column_id': 'Vol Câmbio USD'},
-        'minWidth': '115px'
-    },
-    {
-        'if': {'column_id': 'Duração (min)'},
-        'minWidth': '95px'
-    },
-    {
-        'if': {'column_id': 'Maior cliente'},
-        'minWidth': '130px'
-    },
-    {
-        'if': {'column_id': 'Milionários'},
-        'minWidth': '100px'
-    },
-    {
-        'if': {'column_id': 'UF'},
-        'minWidth': '40px'
-    },
-    # {
-    #     'if': {'column_id': 'Início'},
-    #     'minWidth': '150px'
-    # },
-    # {
-    #     'if': {'column_id': 'Assunto'},
-    #     'minWidth': '223px'
-    # }
-
-]
+CELL_STYLES = []
 STYLE_HEAD = {
-    'backgroundColor': 'white',
+    'backgroundColor': 'gray',
+    'color': 'white',
     'fontWeight': 'bold',
     'padding': '2px 8px 2px',
     'whiteSpace': 'normal',
@@ -213,14 +140,14 @@ def generate_table_selectable(dataframe, title, id_table='', max_height='210px',
             html.Strong(title, style={'horizontal-align': 'center', 'vertical-align': 'top'}),
             html.Div(dash_table.DataTable(columns=[
                 {"name": i, "id": i,
-                 # 'type': TYPES[dataframe[i].ftype],
-                 # 'format': FORMATS[dataframe[i].ftype]
+                 'type': TYPES[dataframe[i].dtype],
+                 'format': FORMATS[dataframe[i].dtype]
                  }
                 for i in dataframe.columns],
 
                 data=dataframe.to_dict('records'),
                 style_cell={'padding': '1px 8px 1px', 'vertical-align': 'top',
-                            'max-width': '240px', 'overflow-y': 'hidden', 'minWidth': min_width},
+                            'max-width': '240px', 'overflow-y': 'hidden', 'backgroundColor': '#484e55', 'color': 'white'},
 
                 # style_cell_conditional=style_cells,
                 tooltip=tooltips,
