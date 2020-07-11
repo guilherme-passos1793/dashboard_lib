@@ -99,7 +99,7 @@ TYPES = {'int64': 'numeric',
          'double': 'numeric',
          'object': 'text',
          'bool': 'bool',
-         'datetime64[ns]': 'datetime'
+         'datetime[ns]': 'datetime',
          }
 FORMATS = {'int64': number(0, group=FormatTemplate.Group.no),
            'uint64': number(0, group=FormatTemplate.Group.no),
@@ -109,7 +109,7 @@ FORMATS = {'int64': number(0, group=FormatTemplate.Group.no),
            'double': number(2),
            'object': '',
            'bool': '',
-           'datetime64[ns]': ''
+           'datetime[ns]': '',
 
            }
 CELL_STYLES = []
@@ -134,16 +134,16 @@ STYLE_HEAD2 = {
 def generate_table_selectable(dataframe, title, id_table='', max_height='210px', selectable='multi', filt='none',
                               sor='none', min_width='0px', tooltips=[], style_cells=CELL_STYLES, style_head=STYLE_HEAD,
                               fixed_cols=0):
-    print(create_conditional_style(dataframe))
+    # print(create_conditional_style(dataframe))
     out = html.Div([html.Div([
         html.Div(children=[
             html.Strong(title, style={'horizontal-align': 'center', 'vertical-align': 'top'}),
             html.Div(dash_table.DataTable(columns=[
-                {"name": i, "id": i,
-                 'type': TYPES[dataframe[i].dtype],
-                 'format': FORMATS[dataframe[i].dtype]
+                {"name": i[0], "id": i[0],
+                 'type': TYPES[i[1]],
+                 'format': FORMATS[i[1]]
                  }
-                for i in dataframe.columns],
+                for i in [(i, str(row)) if 'datetime' not in str(row) else(i, 'datetime[ns]') for i, row in dataframe.dtypes.iteritems()]],
 
                 data=dataframe.to_dict('records'),
                 style_cell={'padding': '1px 8px 1px', 'vertical-align': 'top',
