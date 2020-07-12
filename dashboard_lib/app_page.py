@@ -6,7 +6,7 @@ from .app_initialization import Application
 
 
 class Page():
-    def __init__(self, link, layout, parent, name):
+    def __init__(self, link, layout, parent, name, section='Principal'):
         """
 
         :param link: link to the page on the app
@@ -18,6 +18,7 @@ class Page():
         # self.func_def_callbacks=func_def_callbacks
         self.app = parent
         self.link = link
+        self.section = section
 
     def add_callback(self, func, outputs, inputs, states=[]):
         """
