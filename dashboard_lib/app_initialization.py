@@ -11,7 +11,8 @@ import dash_auth
 import inspect
 import flask
 import pandas as pd
-
+# TODO pasta export
+# TODO save THEME parameter for use in chart generation
 class Application:
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
@@ -27,16 +28,25 @@ class Application:
                                         dcc.Location(id='url', refresh=False), html.Div(id='main_div')], style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available', 'vertical-align': 'top'})], style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'}),
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'), theme=dbc.themes.SLATE):
         """
-
-        :param host:
-        :param assets_folder:
-        :param auth: pairs of usernames and passwords
+        creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
+        :param host: ip and port to host app
+        :type host: str
+        :param assets_folder: path of folder with main assets
+        :type assets_folder: str
+        :param auth: pairs of usernames and password
         :type auth: dict
-        :param title:
-        :param basic_layout:
-        :param page_div_id:
-        :param url_id:
-        :param export_file_path:
+        :param title: title for the app
+        :type title: str
+        :param basic_layout: basic layout for the app
+        :type basic_layout: dash component
+        :param page_div_id: id of the main page container
+        :type page_div_id: str
+        :param url_id: id of the url component
+        :type url_id: str
+        :param export_file_path: path of folder with exportable files
+        :type export_file_path: str
+        :param theme: theme for bootstrap
+        :type theme: str
         """
         self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme], suppress_callback_exceptions=True)
         self.app.title = title
@@ -50,16 +60,29 @@ class Application:
                 self.app,
                 auth
             )
+
     def start(self):
-        # self.app.run_server()
+        """
+        starts the server for the app
+        :return:
+        :rtype:
+        """
         self.app.run_server(host=self.addr.split(':')[0], port=os.getenv("PORT", int(self.addr.split(':')[1])))
 
     def open(self):
+        """
+        opens the server host ip address
+        :return:
+        :rtype:
+        """
         webbrowser.open('http://' + self.addr)
 
     def start_and_open(self):
-        # self.set_page_callback()
-
+        """
+        start and open app server
+        :return:
+        :rtype:
+        """
         t1 = Thread(target=self.start)
         print("##########")
 
@@ -69,11 +92,23 @@ class Application:
         t2.start()
 
     def add_page(self, page):
+        """
+        appends a page to the app, easing page management
+        :param page: Page object, created through app_page.Page()
+        :type page: app_page.Page
+        :return:
+        :rtype:
+        """
         self.pages[page.link] = {'layout': page.layout,
                                  'name': page.name,
                                  'section': page.section}
 
     def set_page_callback(self):
+        """
+        Sets the callback for page management
+        :return:
+        :rtype:
+        """
         self.update_layout_for_sidebar()
         @self.app.callback(dash.dependencies.Output(self.page_div_id, 'children'),
                            [dash.dependencies.Input(self.url_id, 'pathname')])
@@ -87,6 +122,11 @@ class Application:
                 return ''
 
     def auto_generate_sidebar_items(self):
+        """
+        Generate sidebar items based on pages appended to the app
+        :return:
+        :rtype:
+        """
         sidebar_items = [html.Button('X', id='toggle_sidebar_close', style={'backgroundColor': '#202020', 'text-align': 'right', 'color': 'white'}), html.Br()]
         df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section']) for i in self.pages.keys()], columns=['link', 'name', 'section'])
         for section in df.section.drop_duplicates():
@@ -103,6 +143,11 @@ class Application:
         return sidebar_items
 
     def get_sidebar(self):
+        """
+        generate sidebar for the app, based on pages appended to the app
+        :return:
+        :rtype:
+        """
         return dbc.Collapse(
             dbc.Nav(
                 self.auto_generate_sidebar_items(),
@@ -118,6 +163,11 @@ class Application:
         )
 
     def update_layout_for_sidebar(self):
+        """
+        adds the sidebar to the original layout
+        :return:
+        :rtype:
+        """
         self.app.layout.children = [self.get_sidebar()] + self.app.layout.children
 
         @self.app.callback(dash.dependencies.Output('main_sidebar', 'is_open'),
