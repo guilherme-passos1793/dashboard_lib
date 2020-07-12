@@ -15,12 +15,13 @@ import pandas as pd
 class Application:
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
-                 basic_layout=html.Div([html.Div([dcc.Link(html.Img(src='/assets/logo.png'), href='/'),
+                 basic_layout=html.Div([html.Div([html.Div([dcc.Link(html.Img(src='/assets/logo.png'), href='/'),
                                                   html.Button(html.Img(src='/assets/menu_icon.png'),
                                                               className='navbar-toggler',
                                                               id='toggle_sidebar',
                                                               style={'display': 'inline-block', 'text-align': 'center',
-                                                                     'margin-bottom': '25px'}),
+                                                                     'margin-bottom': '25px'})], style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
+
 
                      dbc.Alert(id='main_alert',is_open=False, fade=True, duration=10000, dismissable=True, color="warning"),
                                         dcc.Location(id='url', refresh=False), html.Div(id='main_div')], style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available', 'vertical-align': 'top'})], style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'}),
