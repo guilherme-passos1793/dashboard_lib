@@ -8,6 +8,9 @@ from threading import Thread
 import dash_bootstrap_components as dbc
 print(os.getcwd())
 import dash_auth
+import inspect
+import flask
+
 
 class Application:
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
@@ -28,7 +31,20 @@ class Application:
         """
         self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme], suppress_callback_exceptions=True)
         self.app.title = title
-        self.app.css.append_css({'external_url': './dashboard_libcss.css'})
+        print('%%%%%%%%%%%%%%%%')
+        print()
+        print('%%%%%%%%%%%%%%%%')
+        stylesheets = ['dashboard_libcss.css']
+        @self.app.server.route('/{}<stylesheet>'.format(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))))
+        def serve_stylesheet(stylesheet):
+            if stylesheet not in stylesheets:
+                raise Exception(
+                    '"{}" is excluded from the allowed static files'.format(
+                        stylesheet
+                    )
+                )
+            return flask.send_from_directory(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), stylesheet)
+
         self.app.layout = basic_layout
         self.addr = host
         self.pages = {}
