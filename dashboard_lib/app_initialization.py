@@ -15,7 +15,7 @@ import pandas as pd
 class Application:
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
-                 basic_layout=html.Div([html.Div([dcc.Link(html.Img(src='/assets/favicon.ico'), href='/'),
+                 basic_layout=html.Div([html.Div([dcc.Link(html.Img(src='/assets/logo.png'), href='/'),
                                                   html.Button(html.Img(src='/assets/menu_icon.png'),
                                                               className='navbar-toggler',
                                                               id='toggle_sidebar',
