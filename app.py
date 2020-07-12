@@ -15,7 +15,7 @@ fig.set_title('Titulo')
 
 lay = [html.Div([dcc.Graph(figure=fig.fig, style={'border-radius': '10px', 'display': 'inline-block', 'margin': '5px'}),
                  html.Strong('teste')])]
-page = app_page.Page('/', lay, app)
+page = app_page.Page('/', lay, app, name='index')
 app.add_page(page)
 app.set_page_callback()
 app.start_and_open()
