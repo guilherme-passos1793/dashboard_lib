@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dashboard_lib import figures
 
-app = app_initialization.Application()
+app = app_initialization.Application(assets_folder='c:/users/guila/pycharmprojects/dashboard_lib/assets')
 lab = ['adsa', 'asbjdb', 'asjdoias']
 val = [50, 30, 20]
 fig = figures.DashChart()
