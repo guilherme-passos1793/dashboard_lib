@@ -61,7 +61,8 @@ class Application:
         t2.start()
 
     def add_page(self, page):
-        self.pages[page.link] = page.layout
+        self.pages[page.link] = {'layout': page.layout,
+                                 'name': page.name}
 
     def set_page_callback(self):
         @self.app.callback(dash.dependencies.Output(self.page_div_id, 'children'),

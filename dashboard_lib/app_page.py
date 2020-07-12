@@ -6,7 +6,7 @@ from .app_initialization import Application
 
 
 class Page():
-    def __init__(self, link, layout, parent):
+    def __init__(self, link, layout, parent, name):
         """
 
         :param link: link to the page on the app
@@ -14,6 +14,7 @@ class Page():
         :param parent: application from app_initialization module
         """
         self.layout = layout
+        self.name = name
         # self.func_def_callbacks=func_def_callbacks
         self.app = parent
         self.link = link
