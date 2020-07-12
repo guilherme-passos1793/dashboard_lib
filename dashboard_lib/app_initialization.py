@@ -15,7 +15,8 @@ import flask
 class Application:
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
-                 basic_layout=html.Div([dcc.Location(id='url', refresh=False), html.Div(id='main_div')]),
+                 basic_layout=html.Div([dbc.Alert(id='main_alert',is_open=False, fade=True, duration=10000, dismissable=True, color="warning"),
+                                        dcc.Location(id='url', refresh=False), html.Div(id='main_div')]),
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'), theme=dbc.themes.SLATE):
         """
 
