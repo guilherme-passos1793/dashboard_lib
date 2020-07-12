@@ -31,20 +31,6 @@ class Application:
         """
         self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme], suppress_callback_exceptions=True)
         self.app.title = title
-        print('%%%%%%%%%%%%%%%%')
-        print()
-        print('%%%%%%%%%%%%%%%%')
-        stylesheets = ['dashboard_libcss.css']
-        @self.app.server.route('/{}<stylesheet>'.format(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))))
-        def serve_stylesheet(stylesheet):
-            if stylesheet not in stylesheets:
-                raise Exception(
-                    '"{}" is excluded from the allowed static files'.format(
-                        stylesheet
-                    )
-                )
-            return flask.send_from_directory(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), stylesheet)
-
         self.app.layout = basic_layout
         self.addr = host
         self.pages = {}
