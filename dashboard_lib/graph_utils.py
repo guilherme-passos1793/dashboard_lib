@@ -4,6 +4,7 @@ import dash_table
 import dash_table.FormatTemplate as FormatTemplate
 
 import math
+import plotly.graph_objects as go
 SIZE_DIV_CHART = 200
 SIZE_CHART = 196-4
 WIDTH_CHART_MESA = 410
@@ -103,6 +104,7 @@ TYPES = {'int64': 'numeric',
          }
 FORMATS = {'int64': number(0, group=FormatTemplate.Group.no),
            'uint64': number(0, group=FormatTemplate.Group.no),
+           'uint32': number(0, group=FormatTemplate.Group.no),
            'float64': number(2),
            'int32': number(0, group=FormatTemplate.Group.no),
            'float32': number(2),
@@ -133,7 +135,7 @@ STYLE_HEAD2 = {
 }
 def generate_table_selectable(dataframe, title, id_table='', max_height='650px', selectable='multi', filt='none',
                               sor='none', tooltips=[], style_cells=CELL_STYLES, style_head=STYLE_HEAD,
-                              fixed_cols=0):
+                              fixed_cols=0, bgcolor='#484e55', textcolor='white'):
     # print(create_conditional_style(dataframe))
     out = html.Div([html.Div([
         html.Div(children=[
@@ -146,8 +148,7 @@ def generate_table_selectable(dataframe, title, id_table='', max_height='650px',
                 for i in [(i, str(row)) if 'datetime' not in str(row) else(i, 'datetime[ns]') for i, row in dataframe.dtypes.iteritems()]],
 
                 data=dataframe.to_dict('records'),
-                style_cell={'padding': '1px 8px 1px', 'vertical-align': 'top',
-                            'max-width': '240px', 'overflow-y': 'hidden', 'backgroundColor': '#484e55', 'color': 'white'},
+                style_cell={'padding': '1px 8px 1px', 'vertical-align': 'top', 'overflow-y': 'hidden', 'backgroundColor': bgcolor, 'color': textcolor},
 
                 # style_cell_conditional=style_cells,
                 tooltip=tooltips,
@@ -161,7 +162,7 @@ def generate_table_selectable(dataframe, title, id_table='', max_height='650px',
 
                 row_selectable=selectable,
 
-                style_table={'maxWidth': '95%', 'maxHeight': max_height, 'overflowY': 'auto',
+                style_table={'width': '95%', 'maxHeight': max_height, 'overflowY': 'auto',
                              'overflowX': 'auto', 'font-size': '12px', 'text-align': 'left', 'padding': '2px 8px 2px'},
                 fixed_rows={'headers': True, 'data': 0},
                 fixed_columns={'headers': False, 'data': fixed_cols},
@@ -170,3 +171,45 @@ def generate_table_selectable(dataframe, title, id_table='', max_height='650px',
         html.Br()], style={'vertical-align': 'top', 'z-Index': -1, 'margin-left': '10px'}
     )])
     return out
+
+
+def gera_fig_pie_chart(labels, values, titulo, textposition='inside', text='', showleg=True, height=SIZE_CHART - 20,
+                       width=320-8, bgcolor='#454545', textcolor='white'):
+    if type(text) == "<class 'str'>":
+        text = values
+    if showleg:
+        leg = {'x': -1, 'y': 0}
+        marg = {'l': 10, 'b': 40, 't': 30, 'r': 10}
+    else:
+        leg = {'x': 0, 'y': 0}
+        marg = {'b': 10, 't': 60}
+    fig = {
+        'data': [
+            {
+                'labels': labels,
+                'values': values,
+                'marker': {'colors': colors},
+                "textposition": textposition,
+                'text': text,
+                'type': 'pie',
+            },
+        ],
+        'layout': go.Layout(
+            title=titulo,
+            plot_bgcolor=bgcolor,
+            paper_bgcolor=bgcolor,
+
+            font=dict(
+                color=textcolor,
+                size=12
+            ),
+            height=height,
+            width=width,
+            margin=marg,
+            legend=leg,
+            showlegend=showleg,
+            hovermode='closest',
+        ),
+
+    }
+    return fig

@@ -15,9 +15,16 @@ class Chart:
 
 
 class DashChart:
-    def __init__(self):
+    def __init__(self, bgcolor='#454545', textcolor='#ffffff', height=300, width=400):
         self.manager = 'plotly'
+        self.bgcolor = bgcolor
+        self.font = dict(
+                color=textcolor,
+                size=12
+            )
         self.fig = go.Figure()
+        self.height = height
+        self.width = width
 
     def adiciona_dados(self, dados):
         tipo = dados[0]
@@ -35,17 +42,23 @@ class DashChart:
             elif tipo == 'Pizza':
                 self.fig.add_pie(labels=dados[1], values=dados[2])
             self.fig.update_layout(self.get_layout())
+            self.altera_limites_eixo(eixo_y, 0, max(dados[2]))
         return self.fig
 
     def altera_limites_eixo(self, eixo_y='y', ymin=None, ymax=None):
         if self.manager == 'plotly':
-            pass
+            self.fig.update_layout({eixo_y[:1] + 'axis' + eixo_y[1:]: {'range': (ymin, ymax)}})
 
     def get_layout(self):
         layout = {
             'barmode': 'group',
             'hovermode': 'x',
-            'plot_bgcolor': 'rgba(0,0,0,0)',
+            'plot_bgcolor': self.bgcolor,
+            'paper_bgcolor': self.bgcolor,
+            'height': self.height,
+            'width': self.width,
+            'font': self.font,
+            'margin': {'l': 10, 'b': 40, 't': 30, 'r': 10},
             'legend': {'orientation': 'h'},
             'yaxis2': {'anchor': 'x', 'overlaying': 'y', 'side': 'right'},
             'yaxis3': {'anchor': 'x', 'overlaying': 'y', 'side': 'right'}
@@ -54,7 +67,11 @@ class DashChart:
 
     def set_title(self, title):
         if self.manager == 'plotly':
-            self.fig.update_layout({'title': title})
+            self.fig.update_layout({'title': {'text': title,
+        # 'y':0.9,
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'}})
 
     def set_yaxis_title(self, eixo_y, title):
         if self.manager == 'plotly':
