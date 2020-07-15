@@ -6,7 +6,6 @@ import dash_html_components as html
 import webbrowser
 from threading import Thread
 import dash_bootstrap_components as dbc
-print(os.getcwd())
 import dash_auth
 import inspect
 import flask
@@ -14,6 +13,7 @@ import pandas as pd
 # TODO pasta export
 # TODO save THEME parameter for use in chart generation
 class Application:
+
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
                  basic_layout=html.Div([html.Div([html.Div([dcc.Link(html.Img(src='/assets/logo.png'), href='/'),
@@ -129,6 +129,7 @@ class Application:
         """
         sidebar_items = [html.Button('X', id='toggle_sidebar_close', style={'backgroundColor': '#202020', 'text-align': 'right', 'color': 'white'}), html.Br()]
         df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section']) for i in self.pages.keys()], columns=['link', 'name', 'section'])
+
         for section in df.section.drop_duplicates():
             pages = df.loc[df.section == section]
             details_section = [html.Details([
@@ -137,7 +138,7 @@ class Application:
                     dbc.NavLink(pag['name'], href=pag['link'], style={'backgroundColor': '#202020', 'padding': '0px', 'background-image': 'none', 'border': 0}) for i, pag in pages.iterrows()
                 ]),
             ]),
-                html.Br()]
+            ]
             sidebar_items += details_section
         print(sidebar_items)
         return sidebar_items
