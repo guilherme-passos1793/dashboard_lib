@@ -15,9 +15,10 @@ class Chart:
 
 
 class DashChart:
-    def __init__(self, bgcolor='#454545', textcolor='#ffffff', height=300, width=400):
+    def __init__(self, bgcolor='#484e53', pagebgcolor='#32383e', textcolor='#ffffff', height=300, width=400):
         self.manager = 'plotly'
         self.bgcolor = bgcolor
+        self.pagebgcolor = pagebgcolor
         self.font = dict(
                 color=textcolor,
                 size=12
@@ -25,6 +26,7 @@ class DashChart:
         self.fig = go.Figure()
         self.height = height
         self.width = width
+        self.fig.update_layout(self.get_layout())
 
     def adiciona_dados(self, dados):
         tipo = dados[0]
@@ -54,7 +56,7 @@ class DashChart:
             'barmode': 'group',
             'hovermode': 'x',
             'plot_bgcolor': self.bgcolor,
-            'paper_bgcolor': self.bgcolor,
+            'paper_bgcolor': self.pagebgcolor,
             'height': self.height,
             'width': self.width,
             'font': self.font,
