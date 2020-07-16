@@ -162,7 +162,7 @@ def generate_table_selectable(dataframe, title, id_table='', max_height='650px',
 
                 row_selectable=selectable,
 
-                style_table={'width': '95%', 'maxHeight': max_height, 'overflowY': 'auto',
+                style_table={'maxWidth': '95%', 'maxHeight': max_height, 'overflowY': 'auto',
                              'overflowX': 'auto', 'font-size': '12px', 'text-align': 'left', 'padding': '2px 8px 2px'},
                 fixed_rows={'headers': True, 'data': 0},
                 fixed_columns={'headers': False, 'data': fixed_cols},
