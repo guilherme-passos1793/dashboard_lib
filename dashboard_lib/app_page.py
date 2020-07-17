@@ -3,6 +3,8 @@ import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
 from .app_initialization import Application
+import plotly
+import json
 
 
 class Page():
@@ -42,3 +44,5 @@ class Page():
             def function(*args):
                 return func(*args)
 
+    def get_id_list(self):
+        return self.app.get_id_from_children(json.loads(json.dumps(self.layout, cls=plotly.utils.PlotlyJSONEncoder)))

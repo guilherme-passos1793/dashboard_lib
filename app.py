@@ -4,6 +4,7 @@ import dash_html_components as html
 from dashboard_lib import figures
 
 app = app_initialization.Application(assets_folder='c:/users/guila/pycharmprojects/dashboard_lib/assets')
+app.app.serve_layout()
 lab = ['adsa', 'asbjdb', 'asjdoias']
 val = [50, 30, 20]
 fig = figures.DashChart()
@@ -12,11 +13,14 @@ dados2 = ['Barra', [12, 3, 2, 4], [200, 150, 12, 250], '#debbcc', 'y1', 'linha2'
 fig.adiciona_dados(dados)
 fig.adiciona_dados(dados2)
 fig.set_title('Titulo')
+app.app.clientside_callback()
 
 lay = [html.Div([dcc.Graph(figure=fig.fig, style={'border-radius': '10px', 'display': 'inline-block', 'margin': '5px'}),
                  html.Strong('teste')])]
 page = app_page.Page('/', lay, app, name='index')
+
 app.add_page(page)
 app.set_page_callback()
+
 app.start_and_open()
 

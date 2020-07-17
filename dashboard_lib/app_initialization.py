@@ -10,6 +10,8 @@ import dash_auth
 import inspect
 import flask
 import pandas as pd
+import plotly
+import json
 # TODO pasta export
 # TODO save THEME parameter for use in chart generation
 class Application:
@@ -55,6 +57,7 @@ class Application:
         self.pages = {}
         self.page_div_id = page_div_id
         self.url_id = url_id
+        self.id_list = self.get_id_from_children(json.loads(json.dumps(basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
         if auth:
             basicauth = dash_auth.BasicAuth(
                 self.app,
@@ -99,9 +102,12 @@ class Application:
         :return:
         :rtype:
         """
+        self._checa_validez_ids(page)
+        self._checa_validez_link(page)
         self.pages[page.link] = {'layout': page.layout,
                                  'name': page.name,
                                  'section': page.section}
+        self.id_list += page.get_id_list()
 
     def set_page_callback(self):
         """
@@ -179,3 +185,33 @@ class Application:
             if n1 or n2:
                 return not is_open
 
+    def get_id_list(self):
+        return self.id_list
+
+    def get_id_from_children(self, dicio):
+        list_ids = []
+        if isinstance(dicio, dict):
+            if 'props' in dicio.keys():
+                if isinstance(dicio['props'], dict):
+                    if 'id' in dicio['props'].keys():
+                        list_ids.append(dicio['props']['id'])
+                    if 'children' in dicio['props'].keys():
+                        if dicio['props']['children'] is not None:
+                            for child in list(dicio['props']['children']):
+                                list_ids += self.get_id_from_children(child)
+        elif isinstance(dicio, list) and len(dicio) > 0:
+            for dic in dicio:
+                list_ids += self.get_id_from_children(dic)
+        return list_ids
+
+    def _checa_validez_ids(self, page):
+        ids_page = page.get_id_list()
+        if len(set(ids_page).intersection(set(self.id_list))) > 0:
+            raise Exception("Encontrei ids na nova pagina {}/{} que ja estao sendo utilizadas por outras paginas: {}".format(page.section, page.name, list(set(ids_page).intersection(set(self.id_list)))))
+
+    def _checa_validez_link(self, page):
+        link_page = page.link
+        if link_page in self.pages.keys():
+            raise Exception(
+                "O link da nova pagina {}/{} já está sendo utilizado pela pagina {}/{}".format(
+                    page.section, page.name, self.pages[link_page]['section'], self.pages[link_page]['name']))
