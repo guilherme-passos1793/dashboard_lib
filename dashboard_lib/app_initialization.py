@@ -28,7 +28,7 @@ class Application:
 
                      dbc.Alert(id='main_alert',is_open=False, fade=True, duration=10000, dismissable=True, color="warning"),
                                         dcc.Location(id='url', refresh=False), html.Div(id='main_div')], style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available', 'vertical-align': 'top'})], style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'}),
-                 page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'), theme=dbc.themes.SLATE):
+                 page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'), theme=dbc.themes.SLATE, id_main_alert='main_alert'):
         """
         creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
         :param host: ip and port to host app
@@ -50,6 +50,7 @@ class Application:
         :param theme: theme for bootstrap
         :type theme: str
         """
+        self.id_main_alert = id_main_alert
         self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme], suppress_callback_exceptions=True)
         self.app.title = title
         self.app.layout = basic_layout
@@ -58,6 +59,7 @@ class Application:
         self.page_div_id = page_div_id
         self.url_id = url_id
         self.id_list = self.get_id_from_children(json.loads(json.dumps(basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
+        self.alert_funcs = []
         if auth:
             basicauth = dash_auth.BasicAuth(
                 self.app,
@@ -215,3 +217,71 @@ class Application:
             raise Exception(
                 "O link da nova pagina {}/{} já está sendo utilizado pela pagina {}/{}".format(
                     page.section, page.name, self.pages[link_page]['section'], self.pages[link_page]['name']))
+
+    def add_alert_callback(self, func, inp, states, color="warning"):
+        if isinstance(inp, list) and len(inp) != 1:
+            raise Exception("para usar alertas globais apenas um input deve ser passado")
+        if isinstance(inp, list):
+            if not isinstance(inp[0], tuple) or len(inp) != 2:
+                raise Exception('input deve ser tupla (id, propriedade) ou [(id, propriedade)]')
+            inp = inp[0]
+        if not isinstance(states, list):
+            raise Exception("states tem de ser lista de tuplas [(id, propriedade)]")
+        else:
+            if len(states) > 0:
+                for i in states:
+                    if not isinstance(i, tuple) or len(i) != 2:
+                        raise Exception("states tem de ser lista de tuplas [(id, propriedade)]")
+
+        if len(inspect.signature(func).parameters) != 1 + len(states):
+            raise Exception("Função de alerta tem {} parametros, mas alerta esta sendo configurado com {}".format(len(inspect.signature(func).parameters), 1 + len(states)))
+        self.alert_funcs.append({'input': inp,
+                                 'states': states,
+                                 'function': func,
+                                 'color': color
+                                 })
+
+    def set_alert_callback(self):
+        list_inputs = [a['input'] for a in self.alert_funcs]
+        list_states = [y for x in self.alert_funcs for y in x['states']]
+        @self.app.callback([dash.dependencies.Output(self.id_main_alert, 'children'),
+                            dash.dependencies.Output(self.id_main_alert, 'is_open'),
+                            dash.dependencies.Output(self.id_main_alert, 'color')],
+                           [dash.dependencies.Input(i[0], i[1]) for i in list_inputs],
+                           [dash.dependencies.State(i[0], i[1]) for i in list_states])
+        def alerta(*args):
+            print(args)
+            ctx = dash.callback_context
+            list_inputs = [a['input'] for a in self.alert_funcs]
+            list_states = [y for x in self.alert_funcs for y in x['states']]
+            args_completo = [i[0]+'.' + i[1] for i in list_inputs + list_states]
+            button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+            print(self.alert_funcs)
+            triggered = [i for i in self.alert_funcs if i['input'][0] == button_id]
+            if len(triggered) > 0:
+                triggered = triggered[0]
+                inputs_triggered = triggered['input'][0] + '.' + triggered['input'][1]
+                states_triggered = [i[0] + '.' + i[1] for i in triggered['states']]
+                print(inputs_triggered)
+                print(states_triggered)
+                print(args_completo)
+                args_triggered = [inputs_triggered] + states_triggered
+                args_trig = [args[args_completo.index(a)] for a in args_triggered]
+                print(args_trig)
+                return triggered['function'](*args_trig), True, triggered['color']
+            # return button_id, 'True', 'warning'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
