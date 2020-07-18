@@ -5,6 +5,7 @@ import dash_table
 from .app_initialization import Application
 import plotly
 import json
+from . import _verifications as ver
 
 
 class Page():
@@ -31,6 +32,8 @@ class Page():
         :param states: list of tuples in the form of (id, parameter to change)
         :return:
         """
+        ver.checa_compatibilidade(func, outputs, inputs, states)
+        # todo check validity of parameters
         if type(outputs) == list:
             @self.app.app.callback([dash.dependencies.Output(*out) for out in outputs],
                                [dash.dependencies.Input(*inp) for inp in inputs],

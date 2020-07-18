@@ -7,7 +7,7 @@ import webbrowser
 from threading import Thread
 import dash_bootstrap_components as dbc
 import dash_auth
-import inspect
+from . import _verifications as ver
 import flask
 import pandas as pd
 import plotly
@@ -26,7 +26,7 @@ class Application:
                                                                      'margin-bottom': '25px'})], style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
 
 
-                     dbc.Alert(id='main_alert',is_open=False, fade=True, duration=10000, dismissable=True, color="warning"),
+                                                  dbc.Alert(id='main_alert',is_open=False, fade=True, duration=10000, dismissable=True, color="warning"),
                                         dcc.Location(id='url', refresh=False), html.Div(id='main_div')], style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available', 'vertical-align': 'top'})], style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'}),
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'), theme=dbc.themes.SLATE, id_main_alert='main_alert'):
         """
@@ -221,20 +221,7 @@ class Application:
     def add_alert_callback(self, func, inp, states, color="warning"):
         if isinstance(inp, list) and len(inp) != 1:
             raise Exception("para usar alertas globais apenas um input deve ser passado")
-        if isinstance(inp, list):
-            if not isinstance(inp[0], tuple) or len(inp) != 2:
-                raise Exception('input deve ser tupla (id, propriedade) ou [(id, propriedade)]')
-            inp = inp[0]
-        if not isinstance(states, list):
-            raise Exception("states tem de ser lista de tuplas [(id, propriedade)]")
-        else:
-            if len(states) > 0:
-                for i in states:
-                    if not isinstance(i, tuple) or len(i) != 2:
-                        raise Exception("states tem de ser lista de tuplas [(id, propriedade)]")
-
-        if len(inspect.signature(func).parameters) != 1 + len(states):
-            raise Exception("Função de alerta tem {} parametros, mas alerta esta sendo configurado com {}".format(len(inspect.signature(func).parameters), 1 + len(states)))
+        ver.checa_compatibilidade(func, [], inp, states)
         self.alert_funcs.append({'input': inp,
                                  'states': states,
                                  'function': func,
@@ -242,7 +229,8 @@ class Application:
                                  })
 
     def set_alert_callback(self):
-        list_inputs = [a['input'] for a in self.alert_funcs]
+
+        list_inputs = [y for x in self.alert_funcs for y in x['input']]
         list_states = [y for x in self.alert_funcs for y in x['states']]
         @self.app.callback([dash.dependencies.Output(self.id_main_alert, 'children'),
                             dash.dependencies.Output(self.id_main_alert, 'is_open'),
@@ -252,22 +240,17 @@ class Application:
         def alerta(*args):
             print(args)
             ctx = dash.callback_context
-            list_inputs = [a['input'] for a in self.alert_funcs]
+            list_inputs = [y for x in self.alert_funcs for y in x['input']]
             list_states = [y for x in self.alert_funcs for y in x['states']]
             args_completo = [i[0]+'.' + i[1] for i in list_inputs + list_states]
             button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-            print(self.alert_funcs)
-            triggered = [i for i in self.alert_funcs if i['input'][0] == button_id]
+            triggered = [i for i in self.alert_funcs if i['input'][0][0] == button_id]
             if len(triggered) > 0:
                 triggered = triggered[0]
-                inputs_triggered = triggered['input'][0] + '.' + triggered['input'][1]
+                inputs_triggered = triggered['input'][0][0] + '.' + triggered['input'][0][1]
                 states_triggered = [i[0] + '.' + i[1] for i in triggered['states']]
-                print(inputs_triggered)
-                print(states_triggered)
-                print(args_completo)
                 args_triggered = [inputs_triggered] + states_triggered
                 args_trig = [args[args_completo.index(a)] for a in args_triggered]
-                print(args_trig)
                 return triggered['function'](*args_trig), True, triggered['color']
             # return button_id, 'True', 'warning'
 
