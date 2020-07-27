@@ -1,4 +1,5 @@
 import sys
+import datetime
 import os
 import dash
 import dash_core_components as dcc
@@ -12,6 +13,10 @@ import flask
 import pandas as pd
 import plotly
 import json
+import inspect
+from . import user_functions as user
+
+
 # TODO pasta export
 # TODO save THEME parameter for use in chart generation
 class Application:
@@ -19,16 +24,26 @@ class Application:
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
                  basic_layout=html.Div([html.Div([html.Div([dcc.Link(html.Img(src='/assets/logo.png'), href='/'),
-                                                  html.Button(html.Img(src='/assets/menu_icon.png'),
-                                                              className='navbar-toggler',
-                                                              id='toggle_sidebar',
-                                                              style={'display': 'inline-block', 'text-align': 'center',
-                                                                     'margin-bottom': '25px'})], style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
+                                                            dcc.Store(id='session', storage_type='session'),
+                                                            html.Button(html.Img(src='/assets/menu_icon.png'),
+                                                                        className='navbar-toggler',
+                                                                        id='toggle_sidebar',
+                                                                        style={'display': 'inline-block',
+                                                                               'text-align': 'center',
+                                                                               'margin-bottom': '25px'})],
+                                                           style={'backgroundColor': 'black',
+                                                                  'width': '-webkit-fill-available'}),
 
-
-                                                  dbc.Alert(id='main_alert',is_open=False, fade=True, duration=10000, dismissable=True, color="warning"),
-                                        dcc.Location(id='url', refresh=False), html.Div(id='main_div')], style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available', 'vertical-align': 'top'})], style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'}),
-                 page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'), theme=dbc.themes.SLATE, id_main_alert='main_alert'):
+                                                  dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000,
+                                                            dismissable=True, color="warning"),
+                                                  dcc.Location(id='url', refresh=False), html.Div(id='main_div')],
+                                                 style={'display': 'inline-block', 'height': '100%',
+                                                        'width': '-webkit-fill-available', 'vertical-align': 'top'})],
+                                       style={'height': '100%', 'vertical-align': 'top',
+                                              'width': '-webkit-fill-available'}),
+                 page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'),
+                 theme=dbc.themes.SLATE, id_main_alert='main_alert', session_store_id='session', user_class=None,
+                 tempo_refresh_user=600, default_page='/'):
         """
         creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
         :param host: ip and port to host app
@@ -50,16 +65,21 @@ class Application:
         :param theme: theme for bootstrap
         :type theme: str
         """
+        self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert
-        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme], suppress_callback_exceptions=True)
+        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme],
+                             suppress_callback_exceptions=True)
         self.app.title = title
         self.app.layout = basic_layout
         self.addr = host
         self.pages = {}
         self.page_div_id = page_div_id
         self.url_id = url_id
-        self.id_list = self.get_id_from_children(json.loads(json.dumps(basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
+        self.id_list = self.get_id_from_children(
+            json.loads(json.dumps(basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
         self.alert_funcs = []
+        self.session_store_id = session_store_id
+        self.user_class = user_class
         if auth:
             basicauth = dash_auth.BasicAuth(
                 self.app,
@@ -108,7 +128,8 @@ class Application:
         self._checa_validez_link(page)
         self.pages[page.link] = {'layout': page.layout,
                                  'name': page.name,
-                                 'section': page.section}
+                                 'section': page.section,
+                                 'permissoes_suficientes': page.permissoes_suficientes}
         self.id_list += page.get_id_list()
 
     def set_page_callback(self):
@@ -118,16 +139,90 @@ class Application:
         :rtype:
         """
         self.update_layout_for_sidebar()
-        @self.app.callback(dash.dependencies.Output(self.page_div_id, 'children'),
-                           [dash.dependencies.Input(self.url_id, 'pathname')])
-        def redireciona(path):
-            print(path)
-            print(self.pages.keys())
-            if path in self.pages.keys():
-                print(path)
-                return self.pages[path]['layout']
+
+        @self.app.callback([dash.dependencies.Output(self.page_div_id, 'children'),
+                            dash.dependencies.Output(self.session_store_id, 'data')],
+                           [dash.dependencies.Input(self.url_id, 'pathname')],
+                           [dash.dependencies.State(self.session_store_id, 'data'),
+                            dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
+        def redireciona(path, data, ts):
+            print(data, ts)
+
+            if data is None:
+                perm, uid = self.get_id_perm()
+                data = {'user': uid,
+                        'permissoes': perm}
             else:
-                return ''
+                print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
+                if (datetime.datetime.today() - datetime.datetime.fromtimestamp(
+                        ts / 1000)).seconds > self.tempo_refresh_user:
+                    perm, uid = self.get_id_perm()
+                    data = {'user': uid,
+                            'permissoes': perm}
+                else:
+                    data = data
+
+            if path in self.pages.keys():
+                # print(path)
+                return self.get_page_layout(path, data)
+
+            else:
+                return self.get_page_layout('/', data)
+
+    def get_page_layout(self, path, data):
+        perm = self.pages[path]['permissoes_suficientes']
+        if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
+            perm_user = set(data['permissoes'])
+            if perm is not None:
+                print(perm)
+                if isinstance(perm, list):
+                    for permission_group in perm:
+                        if isinstance(permission_group, str):
+                            if {permission_group}.issubset(perm_user):
+                                print('usuario permitido!')
+                                return self.pages[path]['layout'], data
+                            else:
+                                print('usuario sem permissao!')
+                                return '', data
+                        elif isinstance(permission_group, list):
+                            if set(permission_group).issubset(perm_user):
+                                print('usuario permitido!')
+                                return self.pages[path]['layout'], data
+                            else:
+                                print('usuario sem permissao!')
+                                return '', data
+                        else:
+                            print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
+                                  'com permissao unica')
+                            return '', data
+
+                elif isinstance(perm, str):
+                    if {perm}.issubset(perm_user):
+                        print('usuario permitido str!')
+                        return self.pages[path]['layout'], data
+                    else:
+                        print('usuario sem permissao!')
+                        return '', data
+                else:
+                    print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
+                          'com permissao unica')
+                    return '', data
+            else:
+                print('page n requer permissao!')
+                return self.pages[path]['layout'], data
+        else:
+            print('app nao usa classe user')
+            return self.pages[path]['layout'], data
+    def get_id_perm(self):
+        if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
+            ip = flask.request.remote_addr
+            usr = self.user_class()
+            usr.get_user_from_ip(ip)
+            uid, perm = usr.codigo_unico, usr.permissoes
+            print(uid, perm)
+        else:
+            uid, perm = None, None
+        return perm, uid
 
     def auto_generate_sidebar_items(self):
         """
@@ -135,15 +230,20 @@ class Application:
         :return:
         :rtype:
         """
-        sidebar_items = [html.Button('X', id='toggle_sidebar_close', style={'backgroundColor': '#202020', 'text-align': 'right', 'color': 'white'}), html.Br()]
-        df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section']) for i in self.pages.keys()], columns=['link', 'name', 'section'])
+        sidebar_items = [html.Button('X', id='toggle_sidebar_close',
+                                     style={'backgroundColor': '#202020', 'text-align': 'right', 'color': 'white'}),
+                         html.Br()]
+        df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section']) for i in self.pages.keys()],
+                          columns=['link', 'name', 'section'])
 
         for section in df.section.drop_duplicates():
             pages = df.loc[df.section == section]
             details_section = [html.Details([
                 html.Summary(html.Strong(section), style={'width': '90%'}),
                 html.Div([
-                    dbc.NavLink(pag['name'], href=pag['link'], style={'backgroundColor': '#202020', 'padding': '0px', 'background-image': 'none', 'border': 0}) for i, pag in pages.iterrows()
+                    dbc.NavLink(pag['name'], href=pag['link'],
+                                style={'backgroundColor': '#202020', 'padding': '0px', 'background-image': 'none',
+                                       'border': 0}) for i, pag in pages.iterrows()
                 ]),
             ]),
             ]
@@ -167,7 +267,8 @@ class Application:
             id='main_sidebar',
             is_open=True,
             className='mat-elevation-z0 mat-card col-md-2',
-            style={'backgroundColor': '#202020', 'height': '-webkit-fill-available', 'margin': 0, 'position': 'fixed', 'zIndex': '999999', 'padding': '0px'}
+            style={'backgroundColor': '#202020', 'height': '-webkit-fill-available', 'margin': 0, 'position': 'fixed',
+                   'zIndex': '999999', 'padding': '0px'}
 
         )
 
@@ -209,7 +310,9 @@ class Application:
     def _checa_validez_ids(self, page):
         ids_page = page.get_id_list()
         if len(set(ids_page).intersection(set(self.id_list))) > 0:
-            raise Exception("Encontrei ids na nova pagina {}/{} que ja estao sendo utilizadas por outras paginas: {}".format(page.section, page.name, list(set(ids_page).intersection(set(self.id_list)))))
+            raise Exception(
+                "Encontrei ids na nova pagina {}/{} que ja estao sendo utilizadas por outras paginas: {}".format(
+                    page.section, page.name, list(set(ids_page).intersection(set(self.id_list)))))
 
     def _checa_validez_link(self, page):
         link_page = page.link
@@ -232,6 +335,7 @@ class Application:
 
         list_inputs = [y for x in self.alert_funcs for y in x['input']]
         list_states = [y for x in self.alert_funcs for y in x['states']]
+
         @self.app.callback([dash.dependencies.Output(self.id_main_alert, 'children'),
                             dash.dependencies.Output(self.id_main_alert, 'is_open'),
                             dash.dependencies.Output(self.id_main_alert, 'color')],
@@ -242,7 +346,7 @@ class Application:
             ctx = dash.callback_context
             list_inputs = [y for x in self.alert_funcs for y in x['input']]
             list_states = [y for x in self.alert_funcs for y in x['states']]
-            args_completo = [i[0]+'.' + i[1] for i in list_inputs + list_states]
+            args_completo = [i[0] + '.' + i[1] for i in list_inputs + list_states]
             button_id = ctx.triggered[0]["prop_id"].split(".")[0]
             triggered = [i for i in self.alert_funcs if i['input'][0][0] == button_id]
             if len(triggered) > 0:
@@ -253,18 +357,3 @@ class Application:
                 args_trig = [args[args_completo.index(a)] for a in args_triggered]
                 return triggered['function'](*args_trig), True, triggered['color']
             # return button_id, 'True', 'warning'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

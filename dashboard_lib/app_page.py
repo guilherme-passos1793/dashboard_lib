@@ -8,7 +8,7 @@ import json
 from . import _verifications as ver
 
 
-class Page():
+class Page:
     def __init__(self, link, layout, parent, name, section='Principal', permissoes_suficientes=None):
         """
 
@@ -44,7 +44,6 @@ class Page():
         if states is None:
             states = []
         ver.checa_compatibilidade(func, outputs, inputs, states)
-        # todo check validity of parameters
         if type(outputs) == list:
             @self.app.app.callback([dash.dependencies.Output(*out) for out in outputs],
                                [dash.dependencies.Input(*inp) for inp in inputs],
@@ -58,7 +57,9 @@ class Page():
             def function(*args):
                 return func(*args)
 
-    def add_alert_callback(self, func, input, states=[], color='warning'):
+    def add_alert_callback(self, func, input, states=None, color='warning'):
+        if states is None:
+            states = []
         self.app.add_alert_callback(func, input, states, color=color)
 
     def get_id_list(self):
