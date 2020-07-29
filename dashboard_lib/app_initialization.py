@@ -23,24 +23,6 @@ class Application:
 
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
                  title='My app',
-                 basic_layout=html.Div([html.Div([html.Div([dcc.Link(html.Img(src='/assets/logo.png'), href='/'),
-                                                            dcc.Store(id='session', storage_type='session'),
-                                                            html.Button(html.Img(src='/assets/menu_icon.png'),
-                                                                        className='navbar-toggler',
-                                                                        id='toggle_sidebar',
-                                                                        style={'display': 'inline-block',
-                                                                               'text-align': 'center',
-                                                                               'margin-bottom': '25px'})],
-                                                           style={'backgroundColor': 'black',
-                                                                  'width': '-webkit-fill-available'}),
-
-                                                  dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000,
-                                                            dismissable=True, color="warning"),
-                                                  dcc.Location(id='url', refresh=False), html.Div(id='main_div')],
-                                                 style={'display': 'inline-block', 'height': '100%',
-                                                        'width': '-webkit-fill-available', 'vertical-align': 'top'})],
-                                       style={'height': '100%', 'vertical-align': 'top',
-                                              'width': '-webkit-fill-available'}),
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'),
                  theme=dbc.themes.SLATE, id_main_alert='main_alert', session_store_id='session', user_class=None,
                  tempo_refresh_user=600, default_page='/'):
@@ -70,6 +52,24 @@ class Application:
         self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                              suppress_callback_exceptions=True)
         self.app.title = title
+        basic_layout = html.Div([html.Div([html.Div([dcc.Link(html.Img(src=assets_folder + '/logo.png'), href='/'),
+                                                            dcc.Store(id='session', storage_type='session'),
+                                                            html.Button(html.Img(src=assets_folder + '/menu_icon.png'),
+                                                                        className='navbar-toggler',
+                                                                        id='toggle_sidebar',
+                                                                        style={'display': 'inline-block',
+                                                                               'text-align': 'center',
+                                                                               'margin-bottom': '25px'})],
+                                                           style={'backgroundColor': 'black',
+                                                                  'width': '-webkit-fill-available'}),
+
+                                                  dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000,
+                                                            dismissable=True, color="warning"),
+                                                  dcc.Location(id='url', refresh=False), html.Div(id='main_div')],
+                                                 style={'display': 'inline-block', 'height': '100%',
+                                                        'width': '-webkit-fill-available', 'vertical-align': 'top'})],
+                                       style={'height': '100%', 'vertical-align': 'top',
+                                              'width': '-webkit-fill-available'})
         self.app.layout = basic_layout
         self.addr = host
         self.pages = {}
