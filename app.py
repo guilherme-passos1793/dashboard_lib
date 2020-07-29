@@ -30,6 +30,9 @@ def teste3(n_clicks, timestamp):
 
 
 lay = [html.Div([dcc.Graph(figure=fig.fig, style={'border-radius': '10px', 'display': 'inline-block', 'margin': '5px'}),
+                 dcc.Link(html.I(id='home - button', n_clicks = 0, className ='fas fa-balance-scale',
+                                 style = {'height': '10px', 'width': '10px' ,'color': 'red', 'fontSize': '3 rem', 'paddingLeft': '1 %'}),
+                          href='/'),
                  html.Strong('teste'),
                  html.Button('btn_alerta', id='btn_alerta'),
                  html.Button('btn_alerta2', id='btn_alerta2'),
@@ -44,5 +47,5 @@ app.add_page(page)
 app.set_page_callback()
 app.set_alert_callback()
 if __name__ == '__main__':
-    app.start_and_open()
+    app.start()
 

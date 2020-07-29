@@ -67,7 +67,7 @@ class Application:
         """
         self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert
-        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme],
+        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                              suppress_callback_exceptions=True)
         self.app.title = title
         self.app.layout = basic_layout
