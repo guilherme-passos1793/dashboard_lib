@@ -52,9 +52,9 @@ class Application:
         self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                              suppress_callback_exceptions=True)
         self.app.title = title
-        basic_layout = html.Div([html.Div([html.Div([dcc.Link(html.Img(src=assets_folder + '/logo.png'), href='/'),
+        basic_layout = html.Div([html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href='/'),
                                                             dcc.Store(id='session', storage_type='session'),
-                                                            html.Button(html.Img(src=assets_folder + '/menu_icon.png'),
+                                                            html.Button(html.Img(src=os.path.split(assets_folder)[1] + '/menu_icon.png'),
                                                                         className='navbar-toggler',
                                                                         id='toggle_sidebar',
                                                                         style={'display': 'inline-block',
