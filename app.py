@@ -5,7 +5,8 @@ import dash_html_components as html
 from dashboard_lib import figures
 import os
 app = app_initialization.Application(host='192.168.0.47:'
-                                          '8050', assets_folder=os.getcwd() + '/assets', user_class=user_teste.UserTeste)
+                                          '8050', assets_folder=os.getcwd() + '/assets',
+                                     export_file_path=os.getcwd() + '/export', user_class=user_teste.UserTeste)
 
 lab = ['adsa', 'asbjdb', 'asjdoias']
 val = [50, 30, 20]

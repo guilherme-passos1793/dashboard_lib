@@ -15,7 +15,7 @@ import plotly
 import json
 import inspect
 from . import user_functions as user
-
+from io import BytesIO
 
 # TODO pasta export
 # TODO save THEME parameter for use in chart generation
@@ -67,8 +67,7 @@ class Application:
                                                             dismissable=True, color="warning"),
                                                   dcc.Location(id='url', refresh=False), html.Div(id='main_div')],
                                                  style={'display': 'inline-block', 'height': '100%',
-                                                        'width': '-webkit-fill-available', 'vertical-align': 'top'})],
-                                       style={'height': '100%', 'vertical-align': 'top',
+                                                        'width': '-webkit-fill-available', 'vertical-align': 'top'})], style={'height': '100%', 'vertical-align': 'top',
                                               'width': '-webkit-fill-available'})
         self.app.layout = basic_layout
         self.addr = host
@@ -80,6 +79,19 @@ class Application:
         self.alert_funcs = []
         self.session_store_id = session_store_id
         self.user_class = user_class
+        server = self.app.server
+        self.export_file_path = export_file_path
+        @server.route('/download/<path:path>')
+        def download_from_directory(path):
+            out = BytesIO()
+            try:
+                out.write(open(self.export_file_path + '/' + path, 'rb').read())
+                out.seek(0)
+                os.remove(self.export_file_path + '/' + path)
+            finally:
+                out.seek(0)
+            return flask.send_file(out, as_attachment=True, cache_timeout=0, attachment_filename=path.split('/')[-1])
+
         if auth:
             basicauth = dash_auth.BasicAuth(
                 self.app,
@@ -213,6 +225,7 @@ class Application:
         else:
             print('app nao usa classe user')
             return self.pages[path]['layout'], data
+
     def get_id_perm(self):
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
             ip = flask.request.remote_addr
