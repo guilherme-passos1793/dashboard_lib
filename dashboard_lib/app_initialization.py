@@ -25,7 +25,7 @@ class Application:
                  title='My app',
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'),
                  theme=dbc.themes.SLATE, id_main_alert='main_alert', session_store_id='session', user_class=None,
-                 tempo_refresh_user=600, default_page='/'):
+                 tempo_refresh_user=600, default_page='/', tipo_server = 'host', server=None):
         """
         creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
         :param host: ip and port to host app
@@ -49,8 +49,13 @@ class Application:
         """
         self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert
-        self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
-                             suppress_callback_exceptions=True)
+        if tipo_server == 'host':
+            self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
+                                 suppress_callback_exceptions=True)
+        else:
+            self.app = dash.Dash(__name__, server=None, assets_folder=assets_folder, external_stylesheets=[theme,
+                                                                                              'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
+                                 suppress_callback_exceptions=True)
         self.app.title = title
         basic_layout = html.Div([html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href='/'),
                                                             dcc.Store(id='session', storage_type='session'),

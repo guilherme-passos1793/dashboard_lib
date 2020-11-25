@@ -34,3 +34,94 @@ input:not([type=radio]):not([type=checkbox]) {
 ::-webkit-scrollbar-thumb:hover {
   background: #ccc;
 }
+.dash-filter{
+    color: white !important;
+}
+body{
+    color: white;
+}
+input{
+    background-color: #484e53 !important;
+    color: white
+}
+input:not([type=radio]):not([type=checkbox]) {
+    color: white !important;
+}
+.row{
+   margin-left: 0;
+   margin-right: 0;
+}
+::-webkit-scrollbar {
+  width: 1rem;
+  height: 1rem;
+}
+.Select {
+    background-color: gray !important;
+    border-color: gray !important;
+}
+/* Track */
+::-webkit-scrollbar-track {
+  background: white;
+  border-radius: 0.5rem;
+}
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgba(186, 186, 186, 0.89);
+  border-radius: 0.5rem;
+
+}
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+.Select-control, .Select-value-label, .Select {
+    background-color: #484e53 !important;
+    border-color: #484e53 !important;
+    color: white !important;
+}
+.dash-cell:not(.focused){
+background-color: #484e53 !important;
+    border-color: white !important;
+    color: white !important;
+}
+.dash-header{
+    background-color: #484e53 !important;
+    border-color: white !important;
+    color: white !important;
+}
+.Select-menu-outer {
+    background-color: #484e53 !important;
+    border-color: #484e53 !important;
+    color: white !important;
+    display: inline-block !important;
+    z-index: 1000 !important;
+}
+._dash-loading-callback {
+  /*font-family: sans-serif;*/
+  padding-top: 50px;
+  color: rgb(90, 90, 90);
+  -webkit-animation: fadein 0.5s ease-in 7s forwards; /* Safari, Chrome and Opera > 12.1 */
+     -moz-animation: fadein 0.5s; /* Firefox < 16 */
+      -ms-animation: fadein 0.5s; /* Internet Explorer */
+       -o-animation: fadein 0.5s; /* Opera < 12.1 */
+          animation: fadein 0.5s ease-in 7s forwards;
+
+  /* The banner */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  cursor: progress;
+}
+.value-group-details{
+    padding-bottom: 0.5rem;
+}
+.value-details{
+    text-align: right;
+}
+.bg{
+    fill: rgb(50, 56, 62) !important;
+}

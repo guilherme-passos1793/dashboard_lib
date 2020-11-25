@@ -100,7 +100,7 @@ TYPES = {'int64': 'numeric',
          'double': 'numeric',
          'object': 'text',
          'bool': 'bool',
-         'datetime[ns]': 'datetime',
+         'datetime[ns]': 'datetime'
          }
 FORMATS = {'int64': number(0, group=FormatTemplate.Group.no),
            'uint64': number(0, group=FormatTemplate.Group.no),
@@ -145,7 +145,7 @@ def generate_table_selectable(dataframe, title, id_table='', max_height='650px',
                  'type': TYPES[i[1]],
                  'format': FORMATS[i[1]]
                  }
-                for i in [(i, str(row)) if 'datetime' not in str(row) else(i, 'datetime[ns]') for i, row in dataframe.dtypes.iteritems()]],
+                for i in [(i, str(row)) if 'time' not in str(row) else(i, 'datetime[ns]') for i, row in dataframe.dtypes.iteritems()]],
 
                 data=dataframe.to_dict('records'),
                 style_cell={'padding': '1px 8px 1px', 'vertical-align': 'top', 'overflow-y': 'hidden', 'backgroundColor': bgcolor, 'color': textcolor},
