@@ -53,7 +53,7 @@ class Application:
             self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                                  suppress_callback_exceptions=True)
         else:
-            self.app = dash.Dash(__name__, server=None, assets_folder=assets_folder, external_stylesheets=[theme,
+            self.app = dash.Dash(__name__, server=server, assets_folder=assets_folder, external_stylesheets=[theme,
                                                                                               'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                                  suppress_callback_exceptions=True)
         self.app.title = title
