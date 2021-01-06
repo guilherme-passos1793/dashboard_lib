@@ -30,7 +30,10 @@ class User:
         if ip == '127.0.0.1' or ip is None:
             hostname = socket.gethostname()
         else:
-            hostname = socket.gethostbyaddr(ip)[0]
+            try:
+                hostname = socket.gethostbyaddr(ip)[0]
+            except:
+                hostname = ''
         self.codigo_unico, self.permissoes = self.get_permissions_e_id_from_host(hostname)
 
 
