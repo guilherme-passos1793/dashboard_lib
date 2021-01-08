@@ -263,7 +263,7 @@ class Application:
                                 style={'backgroundColor': '#202020', 'padding': '0px', 'background-image': 'none',
                                        'border': 0}) for i, pag in pages.iterrows()
                 ]),
-            ]),
+            ]), html.Br(),
             ]
             sidebar_items += details_section
         print(sidebar_items)
