@@ -16,7 +16,6 @@ import json
 import inspect
 from . import user_functions as user
 from io import BytesIO
-
 # TODO pasta export
 # TODO save THEME parameter for use in chart generation
 class Application:
@@ -146,7 +145,8 @@ class Application:
         self.pages[page.link] = {'layout': page.layout,
                                  'name': page.name,
                                  'section': page.section,
-                                 'permissoes_suficientes': page.permissoes_suficientes}
+                                 'permissoes_suficientes': page.permissoes_suficientes,
+                                 'icon_class': page.icon_class}
         self.id_list += page.get_id_list()
 
     def set_page_callback(self):
@@ -158,13 +158,13 @@ class Application:
         self.update_layout_for_sidebar()
 
         @self.app.callback([dash.dependencies.Output(self.page_div_id, 'children'),
-                            dash.dependencies.Output(self.session_store_id, 'data')],
+                            dash.dependencies.Output(self.session_store_id, 'data'),
+                            dash.dependencies.Output('main_sidebar', 'children')],
                            [dash.dependencies.Input(self.url_id, 'pathname')],
                            [dash.dependencies.State(self.session_store_id, 'data'),
                             dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
         def redireciona(path, data, ts):
             print(data, ts)
-
             if data is None:
                 perm, uid = self.get_id_perm()
                 data = {'user': uid,
@@ -178,16 +178,28 @@ class Application:
                             'permissoes': perm}
                 else:
                     data = data
+            sidebar_children = dbc.Nav(
+                self.auto_generate_sidebar_items(data),
+                vertical=True,
+                pills=True,
+
+            )
 
             if path in self.pages.keys():
-                # print(path)
-                return self.get_page_layout(path, data)
+                return (*self.get_page_layout(path, data), sidebar_children)
 
             else:
-                return self.get_page_layout('/', data)
+                return (*self.get_page_layout('/', data), sidebar_children)
 
     def get_page_layout(self, path, data):
         perm = self.pages[path]['permissoes_suficientes']
+        status = self.checa_validez_permissao(perm, data)
+        if status:
+            return self.pages[path]['layout'], data
+        else:
+            return self.get_page_layout('/', data)
+
+    def checa_validez_permissao(self, perm, data):
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
             perm_user = set(data['permissoes'])
             if perm is not None:
@@ -197,39 +209,39 @@ class Application:
                         if isinstance(permission_group, str):
                             if {permission_group}.issubset(perm_user):
                                 print('usuario permitido!')
-                                return self.pages[path]['layout'], data
+                                return True
                             else:
                                 print('usuario sem permissao!')
-                                return '', data
+                                return False
                         elif isinstance(permission_group, list):
                             if set(permission_group).issubset(perm_user):
                                 print('usuario permitido!')
-                                return self.pages[path]['layout'], data
+                                return True
                             else:
                                 print('usuario sem permissao!')
-                                return '', data
+                                return False
                         else:
                             print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
                                   'com permissao unica')
-                            return '', data
+                            return False
 
                 elif isinstance(perm, str):
                     if {perm}.issubset(perm_user):
                         print('usuario permitido str!')
-                        return self.pages[path]['layout'], data
+                        return True
                     else:
                         print('usuario sem permissao!')
-                        return '', data
+                        return False
                 else:
                     print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
                           'com permissao unica')
-                    return '', data
+                    return False
             else:
                 print('page n requer permissao!')
-                return self.pages[path]['layout'], data
+                return True
         else:
             print('app nao usa classe user')
-            return self.pages[path]['layout'], data
+            return True
 
     def get_id_perm(self):
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
@@ -242,7 +254,7 @@ class Application:
             uid, perm = None, None
         return perm, uid
 
-    def auto_generate_sidebar_items(self):
+    def auto_generate_sidebar_items(self, data):
         """
         Generate sidebar items based on pages appended to the app
         :return:
@@ -251,19 +263,22 @@ class Application:
         sidebar_items = [html.Button('X', id='toggle_sidebar_close',
                                      style={'backgroundColor': '#202020', 'text-align': 'right', 'color': 'white'}),
                          html.Br()]
-        df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section']) for i in self.pages.keys()],
-                          columns=['link', 'name', 'section'])
+        df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section'], self.pages[i]['icon_class'], self.pages[i]['permissoes_suficientes']) for i in self.pages.keys()],
+                          columns=['link', 'name', 'section', 'icon_class', 'permissoes_suficientes'])
+        df['PERMITIDO'] = df.apply(lambda row: self.checa_validez_permissao(row.permissoes_suficientes, data), axis=1)
+        df = df.loc[df.PERMITIDO]
+        print('')
 
         for section in df.section.drop_duplicates():
             pages = df.loc[df.section == section]
             details_section = [html.Details([
                 html.Summary(html.Strong(section), style={'width': '90%'}),
                 html.Div([
-                    dbc.NavLink(pag['name'], href=pag['link'],
+                    dbc.NavLink([html.I(className=pag['icon_class'], style={'margin-right': '0.4rem', 'font-size': '0.6rem'}), pag['name']], href=pag['link'],
                                 style={'backgroundColor': '#202020', 'padding': '0px', 'background-image': 'none',
-                                       'border': 0}) for i, pag in pages.iterrows()
-                ]),
-            ]), html.Br(),
+                                       'border': 0, 'margin-left': '1rem'}) for i, pag in pages.iterrows()
+                ] + [html.Br()]),
+            ]),
             ]
             sidebar_items += details_section
         print(sidebar_items)
@@ -276,12 +291,7 @@ class Application:
         :rtype:
         """
         return dbc.Collapse(
-            dbc.Nav(
-                self.auto_generate_sidebar_items(),
-                vertical=True,
-                pills=True,
 
-            ),
             id='main_sidebar',
             is_open=True,
             className='mat-elevation-z0 mat-card col-md-2',

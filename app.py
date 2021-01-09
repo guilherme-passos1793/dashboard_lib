@@ -38,12 +38,24 @@ lay = [html.Div([dcc.Graph(figure=fig.fig, style={'border-radius': '10px', 'disp
                  html.Button('btn_alerta', id='btn_alerta'),
                  html.Button('btn_alerta2', id='btn_alerta2'),
                  html.Button('btn_alerta3', id='btn_alerta3')])]
-page = app_page.Page('/', lay, app, name='index', permissoes_suficientes=[['all'], ['other', 'third']])
+page = app_page.Page('/', [html.H1('INDEX')], app, name='index', permissoes_suficientes=[['all'], ['other', 'third']])
 app.add_alert_callback(teste, [('btn_alerta', 'n_clicks')], [('btn_alerta', 'n_clicks_timestamp')], color='info')
 app.add_alert_callback(teste2, [('btn_alerta2', 'n_clicks')], [('btn_alerta2', 'n_clicks_timestamp')])
 page.add_alert_callback(teste3, [('btn_alerta3', 'n_clicks')], [('btn_alerta3', 'n_clicks_timestamp')])
 page.add_callback(teste3, ('btn_alerta3', 'children'), [('btn_alerta3', 'n_clicks')], [('btn_alerta3', 'n_clicks_timestamp')])
 app.add_page(page)
+page = app_page.Page(f'/asd', lay, app, f'pagesad')
+app.add_page(page)
+for i in range(5):
+    page = app_page.Page(f'/{i}', [html.H1(f'Pagina_primario{i}')], app, f'page_{i}', permissoes_suficientes=['all'])
+    app.add_page(page)
+for i in range(5):
+    page2 = app_page.Page(f'/s{i}', [html.H1(f'Pagina_secundario{i}')], app, f'page_{i}', section='Secundaria', permissoes_suficientes=['TRADER'], icon_class=f'fa fa-wifi')
+    app.add_page(page2)
+for i in range(5):
+    page2 = app_page.Page(f'/t{i}', [html.H1(f'Pagina_terciario{i}')], app, f'page_{i}', section='third')
+    app.add_page(page2)
+
 
 app.set_page_callback()
 app.set_alert_callback()

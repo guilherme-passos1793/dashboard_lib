@@ -8,7 +8,7 @@ class UserTeste(user_functions.User):
     def get_permissions_e_id_from_host(self, hostname):
         query = """SELECT * FROM TABELA_USUARIOS WHERE HOSTNAME = HOSTNAME"""
         uid = hostname
-        time.sleep(5)
+        # time.sleep(5)
         print('reload')
         permissions = ['all']
         return uid, permissions

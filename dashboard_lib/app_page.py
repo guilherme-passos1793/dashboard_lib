@@ -9,7 +9,7 @@ from . import _verifications as ver
 
 
 class Page:
-    def __init__(self, link, layout, parent, name, section='Principal', permissoes_suficientes=None):
+    def __init__(self, link, layout, parent, name, section='Principal', permissoes_suficientes=None, icon_class='fa fa-pie-chart'):
         """
 
         :param link: link to the page on the app
@@ -32,6 +32,7 @@ class Page:
         self.link = link
         self.section = section
         self.permissoes_suficientes = permissoes_suficientes
+        self.icon_class = icon_class
 
     def add_callback(self, func, outputs, inputs, states=None):
         """
