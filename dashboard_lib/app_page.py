@@ -63,5 +63,5 @@ class Page:
             states = []
         self.app.add_alert_callback(func, input, states, color=color)
 
-    def get_id_list(self):
-        return self.app.get_id_from_children(json.loads(json.dumps(self.layout, cls=plotly.utils.PlotlyJSONEncoder)))
+    def _get_id_list(self):
+        return self.app._get_id_from_children(json.loads(json.dumps(self.layout, cls=plotly.utils.PlotlyJSONEncoder)))

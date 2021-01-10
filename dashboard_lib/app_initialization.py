@@ -18,6 +18,8 @@ from . import user_functions as user
 from io import BytesIO
 # TODO pasta export
 # TODO save THEME parameter for use in chart generation
+
+
 class Application:
 
     def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
@@ -78,7 +80,7 @@ class Application:
         self.pages = {}
         self.page_div_id = page_div_id
         self.url_id = url_id
-        self.id_list = self.get_id_from_children(
+        self.id_list = self._get_id_from_children(
             json.loads(json.dumps(basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
         self.alert_funcs = []
         self.session_store_id = session_store_id
@@ -147,7 +149,7 @@ class Application:
                                  'section': page.section,
                                  'permissoes_suficientes': page.permissoes_suficientes,
                                  'icon_class': page.icon_class}
-        self.id_list += page.get_id_list()
+        self.id_list += page._get_id_list()
 
     def set_page_callback(self):
         """
@@ -155,7 +157,7 @@ class Application:
         :return:
         :rtype:
         """
-        self.update_layout_for_sidebar()
+        self._update_layout_for_sidebar()
 
         @self.app.callback([dash.dependencies.Output(self.page_div_id, 'children'),
                             dash.dependencies.Output(self.session_store_id, 'data'),
@@ -166,40 +168,40 @@ class Application:
         def redireciona(path, data, ts):
             print(data, ts)
             if data is None:
-                perm, uid = self.get_id_perm()
+                perm, uid = self._get_id_perm()
                 data = {'user': uid,
                         'permissoes': perm}
             else:
                 print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
                 if (datetime.datetime.today() - datetime.datetime.fromtimestamp(
                         ts / 1000)).seconds > self.tempo_refresh_user:
-                    perm, uid = self.get_id_perm()
+                    perm, uid = self._get_id_perm()
                     data = {'user': uid,
                             'permissoes': perm}
                 else:
                     data = data
             sidebar_children = dbc.Nav(
-                self.auto_generate_sidebar_items(data),
+                self._auto_generate_sidebar_items(data),
                 vertical=True,
                 pills=True,
 
             )
 
             if path in self.pages.keys():
-                return (*self.get_page_layout(path, data), sidebar_children)
+                return (*self._get_page_layout(path, data), sidebar_children)
 
             else:
-                return (*self.get_page_layout('/', data), sidebar_children)
+                return (*self._get_page_layout('/', data), sidebar_children)
 
-    def get_page_layout(self, path, data):
+    def _get_page_layout(self, path, data):
         perm = self.pages[path]['permissoes_suficientes']
-        status = self.checa_validez_permissao(perm, data)
+        status = self._checa_validez_permissao(perm, data)
         if status:
             return self.pages[path]['layout'], data
         else:
-            return self.get_page_layout('/', data)
+            return self._get_page_layout('/', data)
 
-    def checa_validez_permissao(self, perm, data):
+    def _checa_validez_permissao(self, perm, data):
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
             perm_user = set(data['permissoes'])
             if perm is not None:
@@ -243,7 +245,7 @@ class Application:
             print('app nao usa classe user')
             return True
 
-    def get_id_perm(self):
+    def _get_id_perm(self):
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
             ip = flask.request.remote_addr
             usr = self.user_class()
@@ -254,7 +256,7 @@ class Application:
             uid, perm = None, None
         return perm, uid
 
-    def auto_generate_sidebar_items(self, data):
+    def _auto_generate_sidebar_items(self, data):
         """
         Generate sidebar items based on pages appended to the app
         :return:
@@ -265,7 +267,7 @@ class Application:
                          html.Br()]
         df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section'], self.pages[i]['icon_class'], self.pages[i]['permissoes_suficientes']) for i in self.pages.keys()],
                           columns=['link', 'name', 'section', 'icon_class', 'permissoes_suficientes'])
-        df['PERMITIDO'] = df.apply(lambda row: self.checa_validez_permissao(row.permissoes_suficientes, data), axis=1)
+        df['PERMITIDO'] = df.apply(lambda row: self._checa_validez_permissao(row.permissoes_suficientes, data), axis=1)
         df = df.loc[df.PERMITIDO]
         print('')
 
@@ -284,7 +286,7 @@ class Application:
         print(sidebar_items)
         return sidebar_items
 
-    def get_sidebar(self):
+    def _get_sidebar(self):
         """
         generate sidebar for the app, based on pages appended to the app
         :return:
@@ -300,13 +302,13 @@ class Application:
 
         )
 
-    def update_layout_for_sidebar(self):
+    def _update_layout_for_sidebar(self):
         """
         adds the sidebar to the original layout
         :return:
         :rtype:
         """
-        self.app.layout.children = [self.get_sidebar()] + self.app.layout.children
+        self.app.layout.children = [self._get_sidebar()] + self.app.layout.children
 
         @self.app.callback(dash.dependencies.Output('main_sidebar', 'is_open'),
                            [dash.dependencies.Input('toggle_sidebar', 'n_clicks'),
@@ -316,10 +318,10 @@ class Application:
             if n1 or n2:
                 return not is_open
 
-    def get_id_list(self):
+    def _get_id_list(self):
         return self.id_list
 
-    def get_id_from_children(self, dicio):
+    def _get_id_from_children(self, dicio):
         list_ids = []
         if isinstance(dicio, dict):
             if 'props' in dicio.keys():
@@ -329,14 +331,14 @@ class Application:
                     if 'children' in dicio['props'].keys():
                         if dicio['props']['children'] is not None:
                             for child in list(dicio['props']['children']):
-                                list_ids += self.get_id_from_children(child)
+                                list_ids += self._get_id_from_children(child)
         elif isinstance(dicio, list) and len(dicio) > 0:
             for dic in dicio:
-                list_ids += self.get_id_from_children(dic)
+                list_ids += self._get_id_from_children(dic)
         return list_ids
 
     def _checa_validez_ids(self, page):
-        ids_page = page.get_id_list()
+        ids_page = page._get_id_list()
         if len(set(ids_page).intersection(set(self.id_list))) > 0:
             raise Exception(
                 "Encontrei ids na nova pagina {}/{} que ja estao sendo utilizadas por outras paginas: {}".format(

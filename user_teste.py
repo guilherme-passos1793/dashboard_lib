@@ -1,6 +1,7 @@
 from dashboard_lib import user_functions
 import time
 
+
 class UserTeste(user_functions.User):
     def __init__(self):
         super().__init__()

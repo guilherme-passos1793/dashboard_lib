@@ -16,6 +16,19 @@ class Chart:
 
 class DashChart:
     def __init__(self, bgcolor='#484e53', pagebgcolor='#32383e', textcolor='#ffffff', height=300, width=400):
+        """
+
+        :param bgcolor: cor do bg interno
+        :type bgcolor: str
+        :param pagebgcolor: cor do bg da pagina
+        :type pagebgcolor: str
+        :param textcolor: cor do texto no grafico
+        :type textcolor: str
+        :param height: altura em px ou None - passar None se ajustara ao dcc.Graph (util para unidades rem)
+        :type height: int|None
+        :param width: largura em px ou None - passar None se ajustara ao dcc.Graph (util para unidades rem)
+        :type width: int|None
+        """
         self.manager = 'plotly'
         self.bgcolor = bgcolor
         self.pagebgcolor = pagebgcolor
