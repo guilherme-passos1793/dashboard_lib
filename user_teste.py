@@ -10,6 +10,6 @@ class UserTeste(user_functions.User):
         query = """SELECT * FROM TABELA_USUARIOS WHERE HOSTNAME = HOSTNAME"""
         uid = hostname
         # time.sleep(5)
-        print('reload')
+        # print('reload')
         permissions = ['all']
         return uid, permissions

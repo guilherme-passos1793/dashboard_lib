@@ -127,7 +127,7 @@ class Application:
         :rtype:
         """
         t1 = Thread(target=self.start)
-        print("##########")
+        # print("##########")
 
         t2 = Thread(target=self.open)
         t1.start()
@@ -166,13 +166,13 @@ class Application:
                            [dash.dependencies.State(self.session_store_id, 'data'),
                             dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
         def redireciona(path, data, ts):
-            print(data, ts)
+            # print(data, ts)
             if data is None:
                 perm, uid = self._get_id_perm()
                 data = {'user': uid,
                         'permissoes': perm}
             else:
-                print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
+                # print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
                 if (datetime.datetime.today() - datetime.datetime.fromtimestamp(
                         ts / 1000)).seconds > self.tempo_refresh_user:
                     perm, uid = self._get_id_perm()
@@ -205,22 +205,22 @@ class Application:
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
             perm_user = set(data['permissoes'])
             if perm is not None:
-                print(perm)
+                # print(perm)
                 if isinstance(perm, list):
                     for permission_group in perm:
                         if isinstance(permission_group, str):
                             if {permission_group}.issubset(perm_user):
-                                print('usuario permitido!')
+                                # print('usuario permitido!')
                                 return True
                             else:
-                                print('usuario sem permissao!')
+                                # print('usuario sem permissao!')
                                 return False
                         elif isinstance(permission_group, list):
                             if set(permission_group).issubset(perm_user):
-                                print('usuario permitido!')
+                                # print('usuario permitido!')
                                 return True
                             else:
-                                print('usuario sem permissao!')
+                                # print('usuario sem permissao!')
                                 return False
                         else:
                             print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
@@ -229,20 +229,20 @@ class Application:
 
                 elif isinstance(perm, str):
                     if {perm}.issubset(perm_user):
-                        print('usuario permitido str!')
+                        # print('usuario permitido str!')
                         return True
                     else:
-                        print('usuario sem permissao!')
+                        # print('usuario sem permissao!')
                         return False
                 else:
                     print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
                           'com permissao unica')
                     return False
             else:
-                print('page n requer permissao!')
+                # print('page n requer permissao!')
                 return True
         else:
-            print('app nao usa classe user')
+            # print('app nao usa classe user')
             return True
 
     def _get_id_perm(self):
@@ -251,7 +251,7 @@ class Application:
             usr = self.user_class()
             usr.get_user_from_ip(ip)
             uid, perm = usr.codigo_unico, usr.permissoes
-            print(uid, perm)
+            # print(uid, perm)
         else:
             uid, perm = None, None
         return perm, uid
@@ -269,7 +269,7 @@ class Application:
                           columns=['link', 'name', 'section', 'icon_class', 'permissoes_suficientes'])
         df['PERMITIDO'] = df.apply(lambda row: self._checa_validez_permissao(row.permissoes_suficientes, data), axis=1)
         df = df.loc[df.PERMITIDO]
-        print('')
+        # print('')
 
         for section in df.section.drop_duplicates():
             pages = df.loc[df.section == section]
@@ -283,10 +283,11 @@ class Application:
             ]),
             ]
             sidebar_items += details_section
-        print(sidebar_items)
+        # print(sidebar_items)
         return sidebar_items
 
-    def _get_sidebar(self):
+    @staticmethod
+    def _get_sidebar():
         """
         generate sidebar for the app, based on pages appended to the app
         :return:
@@ -372,7 +373,7 @@ class Application:
                            [dash.dependencies.Input(i[0], i[1]) for i in list_inputs],
                            [dash.dependencies.State(i[0], i[1]) for i in list_states])
         def alerta(*args):
-            print(args)
+            # print(args)
             ctx = dash.callback_context
             list_inputs = [y for x in self.alert_funcs for y in x['input']]
             list_states = [y for x in self.alert_funcs for y in x['states']]

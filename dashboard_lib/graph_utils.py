@@ -5,6 +5,7 @@ import dash_table.FormatTemplate as FormatTemplate
 
 import math
 import plotly.graph_objects as go
+from . import figures
 
 SIZE_DIV_CHART = 200
 SIZE_CHART = 196 - 4
