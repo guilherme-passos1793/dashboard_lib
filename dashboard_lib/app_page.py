@@ -63,5 +63,11 @@ class Page:
             states = []
         self.app.add_alert_callback(func, input, states, color=color)
 
+    def add_download_callback(self, func, input, states=None):
+        if states is None:
+            states = []
+        print('added download' + func.__name__)
+        self.app.add_download_callback(func, input, states)
+
     def _get_id_list(self):
         return self.app._get_id_from_children(json.loads(json.dumps(self.layout, cls=plotly.utils.PlotlyJSONEncoder)))

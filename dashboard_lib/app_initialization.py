@@ -16,9 +16,13 @@ import json
 import inspect
 from . import user_functions as user
 from io import BytesIO
-# TODO pasta export
 # TODO save THEME parameter for use in chart generation
 
+# TODO make a redirect function to the download route
+# TODO criar estrutura unica de acesso à session store
+
+
+# IDEA fazer funcao de add_download que adiciona uma rota nova --- NAAAAAAO risco de acumular-se rotas, teria de passar os parametros tbm
 
 class Application:
 
@@ -26,7 +30,7 @@ class Application:
                  title='My app',
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'),
                  theme=dbc.themes.SLATE, id_main_alert='main_alert', session_store_id='session', user_class=None,
-                 tempo_refresh_user=600, default_page='/', tipo_server = 'host', server=None):
+                 tempo_refresh_user=600, default_page='/', tipo_server='host', server=None, base_layout=None):
         """
         creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
         :param host: ip and port to host app
@@ -48,6 +52,21 @@ class Application:
         :param theme: theme for bootstrap
         :type theme: str
         """
+        BASIC_LAYOUT = html.Div(
+            [html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href='/'),
+                                 dcc.Store(id='session', storage_type='session'),
+                                 html.Button(html.Img(src=os.path.split(assets_folder)[1] + '/menu_icon.png'),
+                                             className='navbar-toggler', id='toggle_sidebar',
+                                             style={'display': 'inline-block', 'text-align': 'center',
+                                                    'margin-bottom': '25px'})],
+                                style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
+                       dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000, dismissable=True,
+                                 color="warning"), dcc.Location(id='url', refresh=False), html.Div(id='main_div'),],
+                      style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
+                             'vertical-align': 'top'})],
+            style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
+        if base_layout is None:
+            base_layout = BASIC_LAYOUT
         self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert
         if tipo_server == 'host':
@@ -58,31 +77,24 @@ class Application:
                                                                                               'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                                  suppress_callback_exceptions=True)
         self.app.title = title
-        basic_layout = html.Div([html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href='/'),
-                                                            dcc.Store(id='session', storage_type='session'),
-                                                            html.Button(html.Img(src=os.path.split(assets_folder)[1] + '/menu_icon.png'),
-                                                                        className='navbar-toggler',
-                                                                        id='toggle_sidebar',
-                                                                        style={'display': 'inline-block',
-                                                                               'text-align': 'center',
-                                                                               'margin-bottom': '25px'})],
-                                                           style={'backgroundColor': 'black',
-                                                                  'width': '-webkit-fill-available'}),
-
-                                                  dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000,
-                                                            dismissable=True, color="warning"),
-                                                  dcc.Location(id='url', refresh=False), html.Div(id='main_div')],
-                                                 style={'display': 'inline-block', 'height': '100%',
-                                                        'width': '-webkit-fill-available', 'vertical-align': 'top'})], style={'height': '100%', 'vertical-align': 'top',
-                                              'width': '-webkit-fill-available'})
-        self.app.layout = basic_layout
+        self.basic_layout = base_layout
+        self.app.layout = self.basic_layout
         self.addr = host
         self.pages = {}
         self.page_div_id = page_div_id
         self.url_id = url_id
         self.id_list = self._get_id_from_children(
-            json.loads(json.dumps(basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
+            json.loads(json.dumps(self.basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
+        if page_div_id not in self.id_list:
+            raise(Exception("Atributo page_div_id deve ser uma id contida em base_layout"))
+        if url_id not in self.id_list:
+            raise(Exception("Atributo url_id deve ser uma id contida em base_layout"))
+        if id_main_alert not in self.id_list:
+            raise(Exception("Atributo id_main_alert deve ser uma id contida em base_layout"))
+        if session_store_id not in self.id_list:
+            raise(Exception("Atributo id_main_alert deve ser uma id contida em base_layout"))
         self.alert_funcs = []
+        self.download_funcs = []
         self.session_store_id = session_store_id
         self.user_class = user_class
         server = self.app.server
@@ -166,13 +178,13 @@ class Application:
                            [dash.dependencies.State(self.session_store_id, 'data'),
                             dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
         def redireciona(path, data, ts):
-            # print(data, ts)
+            print(data, ts)
             if data is None:
                 perm, uid = self._get_id_perm()
                 data = {'user': uid,
                         'permissoes': perm}
             else:
-                # print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
+                print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
                 if (datetime.datetime.today() - datetime.datetime.fromtimestamp(
                         ts / 1000)).seconds > self.tempo_refresh_user:
                     perm, uid = self._get_id_perm()
@@ -193,12 +205,49 @@ class Application:
             else:
                 return (*self._get_page_layout('/', data), sidebar_children)
 
+    def add_download_callback(self, func, inp, states):
+        if isinstance(inp, list) and len(inp) != 1:
+            raise Exception("para usar downloads globais apenas um input deve ser passado")
+        ver.checa_compatibilidade(func, [], inp, states)
+        self.download_funcs.append({'input': inp,
+                                    'states': states,
+                                    'function': func
+                                    })
+
+    def set_download_callbacks(self):
+
+        list_inputs = [y for x in self.download_funcs for y in x['input']]
+        list_states = [y for x in self.download_funcs for y in x['states']]
+        # TODO encontrar maneira de fazer redirecionamento para rota via server - equivalente à webbrowser.open() - talvez clientside_callback + session stored filename?
+        # @self.app.clientside_callback(dash.dependencies.Output(self.url_id, 'pathname'),
+        #                    [dash.dependencies.Input(i[0], i[1]) for i in list_inputs],
+        #                    [dash.dependencies.State(i[0], i[1]) for i in list_states] + [dash.dependencies.State(self.url_id, 'pathname')], prevent_initial_call=True)
+        # def download(*args):
+        #     ctx = dash.callback_context
+        #     list_inputs = [y for x in self.download_funcs for y in x['input']]
+        #     list_states = [y for x in self.download_funcs for y in x['states']]
+        #     args_completo = [i[0] + '.' + i[1] for i in list_inputs + list_states]
+        #     button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        #     triggered = [i for i in self.download_funcs if i['input'][0][0] == button_id]
+        #     print(args[-1])
+        #     if len(triggered) > 0 and ctx.triggered[0].get('value') is not None:
+        #         triggered = triggered[0]
+        #         inputs_triggered = triggered['input'][0][0] + '.' + triggered['input'][0][1]
+        #         states_triggered = [i[0] + '.' + i[1] for i in triggered['states']]
+        #         args_triggered = [inputs_triggered] + states_triggered
+        #         args_trig = [args[args_completo.index(a)] for a in args_triggered]
+        #         # flask.redirect('/download/' + triggered['function'](*args_trig))
+        #
+        #         return args[-1]
+        #     return args[-1]
+
     def _get_page_layout(self, path, data):
         perm = self.pages[path]['permissoes_suficientes']
         status = self._checa_validez_permissao(perm, data)
         if status:
             return self.pages[path]['layout'], data
         else:
+            print(path)
             return self._get_page_layout('/', data)
 
     def _checa_validez_permissao(self, perm, data):
@@ -388,3 +437,4 @@ class Application:
                 args_trig = [args[args_completo.index(a)] for a in args_triggered]
                 return triggered['function'](*args_trig), True, triggered['color']
             # return button_id, 'True', 'warning'
+
