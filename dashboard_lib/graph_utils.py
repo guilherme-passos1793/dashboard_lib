@@ -2,10 +2,9 @@
 import dash_html_components as html
 import dash_table
 import dash_table.FormatTemplate as FormatTemplate
-
+import pandas as pd
 import math
 import plotly.graph_objects as go
-from . import figures
 
 SIZE_DIV_CHART = 200
 SIZE_CHART = 196 - 4
@@ -126,7 +125,7 @@ STYLE_HEAD = {
 }
 
 
-def generate_table_selectable(dataframe, id_table='', max_height='50rem', selectable='multi', filt='none',
+def generate_table_selectable(dataframe: pd.DataFrame, id_table='', max_height='50rem', selectable='multi', filt='none',
                               sor='none', tooltips=None, style_cells=None, style_head=None,
                               fixed_cols=0, bgcolor='#484e55', textcolor='white'):
 	if tooltips is None:

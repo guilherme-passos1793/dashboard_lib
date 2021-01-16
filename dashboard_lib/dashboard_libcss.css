@@ -12,8 +12,8 @@ input:not([type=radio]):not([type=checkbox]) {
     color: white !important;
 }
 .row{
-   margin-left: 0px;
-   margin-right: 0px;
+   margin-left: 0;
+   margin-right: 0;
 }
 ::-webkit-scrollbar {
   width: 10px;

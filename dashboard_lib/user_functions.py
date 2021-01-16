@@ -32,7 +32,8 @@ class User:
         else:
             try:
                 hostname = socket.gethostbyaddr(ip)[0]
-            except:
+            except Exception as e:
+                print(e)
                 hostname = ''
         self.codigo_unico, self.permissoes = self.get_permissions_e_id_from_host(hostname)
 

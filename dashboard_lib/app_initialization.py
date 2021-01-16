@@ -1,6 +1,6 @@
-import sys
 import datetime
 import os
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -22,18 +22,20 @@ from io import BytesIO
 
 # TODO make a redirect function to the download route
 # TODO criar estrutura unica de acesso à session store
+external_css = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'
 
-
-# IDEA fazer funcao de add_download que adiciona uma rota nova --- NAAAAAAO risco de acumular-se rotas, teria de passar os parametros tbm
 
 class Application:
-
-	def __init__(self, host='127.0.0.1:8050', assets_folder=os.path.join(os.getcwd(), '/assets'), auth=None,
-	             title='My app',
-	             page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'),
-	             theme=dbc.themes.SLATE, id_main_alert='main_alert', session_store_id='session', user_class=None,
-	             tempo_refresh_user=600, default_page='/', tipo_server='host', server=None, base_layout=None,
-	             navbar_type='h', navbar_id='navbar_id'):
+	def __init__(self, host: str = '127.0.0.1:8050',
+	             assets_folder: str = os.path.join(os.getcwd(), '/assets'),
+	             auth: dict = None, title: str = 'My app',
+	             page_div_id: str = 'main_div', url_id: str = 'url',
+	             export_file_path: str = os.path.join(os.getcwd(), '/export'),
+	             theme: str = dbc.themes.SLATE, id_main_alert: str = 'main_alert', session_store_id: str = 'session',
+	             user_class=None,
+	             tempo_refresh_user: int = 600, default_page: str = '/', tipo_server: str = 'host',
+	             server: flask.Flask = None, base_layout: dash.development.base_component.Component = None,
+	             navbar_type: str = 'h', navbar_id: str = 'navbar_id'):
 		"""
 		creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
 		:param host: ip and port to host app
@@ -44,8 +46,8 @@ class Application:
 		:type auth: dict
 		:param title: title for the app
 		:type title: str
-		:param basic_layout: basic layout for the app
-		:type basic_layout: dash component
+		:param base_layout: basic layout for the app
+		:type base_layout: dash component
 		:param page_div_id: id of the main page container
 		:type page_div_id: str
 		:param url_id: id of the url component
@@ -58,7 +60,7 @@ class Application:
 		self.storage_funcs = []
 		self.default_page = default_page
 		if navbar_type == 'v':
-			BASIC_LAYOUT = html.Div(
+			basic_layout = html.Div(
 				[html.Div(
 					[html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href=default_page),
 					           html.Button(html.Img(src=os.path.split(assets_folder)[1] + '/menu_icon.png'),
@@ -74,7 +76,7 @@ class Application:
 					       'vertical-align': 'top'})],
 				style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
 		elif navbar_type == 'h':
-			BASIC_LAYOUT = html.Div(
+			basic_layout = html.Div(
 				[html.Div([dbc.NavbarSimple([
 
 				],
@@ -92,7 +94,7 @@ class Application:
 					       'vertical-align': 'top'})],
 				style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
 		else:
-			BASIC_LAYOUT = html.Div(
+			basic_layout = html.Div(
 				[html.Div([html.Div(
 					[dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href=self.default_page), ],
 					style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
@@ -104,16 +106,19 @@ class Application:
 				                 'vertical-align': 'top'})],
 				style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
 		if base_layout is None:
-			base_layout = BASIC_LAYOUT
+			base_layout = basic_layout
 		self.tempo_refresh_user = tempo_refresh_user
 		self.id_main_alert = id_main_alert
 		if tipo_server == 'host':
-			self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme,
-			                                                                                  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
+			self.app = dash.Dash(__name__,
+			                     assets_folder=assets_folder,
+			                     external_stylesheets=[theme, external_css],
 			                     suppress_callback_exceptions=True)
 		else:
-			self.app = dash.Dash(__name__, server=server, assets_folder=assets_folder, external_stylesheets=[theme,
-			                                                                                                 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
+			self.app = dash.Dash(__name__,
+			                     server=server,
+			                     assets_folder=assets_folder,
+			                     external_stylesheets=[theme, external_css],
 			                     suppress_callback_exceptions=True)
 		self.app.title = title
 		self.basic_layout = base_layout
@@ -123,7 +128,7 @@ class Application:
 		self.page_div_id = page_div_id
 		self.url_id = url_id
 		self.navbar_id = navbar_id
-		self.id_list = self._get_id_from_children(
+		self.id_list = self.get_id_from_children(
 			json.loads(json.dumps(self.basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
 		if page_div_id not in self.id_list:
 			raise (Exception("Atributo page_div_id deve ser uma id contida em base_layout"))
@@ -203,7 +208,7 @@ class Application:
 		                         'section': page.section,
 		                         'permissoes_suficientes': page.permissoes_suficientes,
 		                         'icon_class': page.icon_class}
-		self.id_list += page._get_id_list()
+		self.id_list += page.get_id_list()
 
 	def set_page_callback(self):
 		"""
@@ -219,7 +224,8 @@ class Application:
 			                   [dash.dependencies.State(self.session_store_id, 'data'),
 			                    dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
 			def set_sidebar_items(path, data, ts):
-				data = atualiza_data_perm(self, data, ts)
+
+				data = self.atualiza_data_perm(data, ts)
 				sidebar_children = dbc.Nav(
 					self._auto_generate_sidebar_items(data),
 					vertical=True,
@@ -233,7 +239,7 @@ class Application:
 			                   [dash.dependencies.State(self.session_store_id, 'data'),
 			                    dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
 			def set_navbar_items(path, data, ts):
-				data = atualiza_data_perm(self, data, ts)
+				data = self.atualiza_data_perm(data, ts)
 				navbar = self.auto_generate_navbar(data)
 				return navbar
 
@@ -244,7 +250,7 @@ class Application:
 		#                    )
 		def recalcula_permissoes(path, data, ts):
 			# print(data, ts)
-			data = atualiza_data_perm(self, data, ts)
+			data = self.atualiza_data_perm(data, ts)
 
 			return data
 
@@ -258,7 +264,7 @@ class Application:
 		                    dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
 		def redireciona(path, data, ts):
 			# print(data, ts)
-			data = atualiza_data_perm(self, data, ts)
+			data = self.atualiza_data_perm(data, ts)
 
 			if path in self.pages.keys():
 				return self._get_page_layout(path, data)
@@ -266,34 +272,34 @@ class Application:
 			else:
 				return self._get_page_layout(self.default_page, data)
 
-		def atualiza_data_perm(self, data, ts):
-			if data is None:
+		self.set_session_storage_callback()
+
+	def atualiza_data_perm(self, data, ts):
+		if data is None:
+			perm, uid = self._get_id_perm()
+			data = dict()
+			data.update({'user': uid,
+			             'permissoes': perm})
+		elif data.get('user') is None or data.get('permissoes') is None:
+			perm, uid = self._get_id_perm()
+			data = dict()
+			data.update({'user': uid,
+			             'permissoes': perm})
+		else:
+			# print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
+			if (datetime.datetime.today() - datetime.datetime.fromtimestamp(
+					ts / 1000)).seconds > self.tempo_refresh_user:
 				perm, uid = self._get_id_perm()
-				data = dict()
-				data.update({'user': uid,
-				             'permissoes': perm})
-			elif data.get('user') is None or data.get('permissoes') is None:
-				perm, uid = self._get_id_perm()
-				data = dict()
 				data.update({'user': uid,
 				             'permissoes': perm})
 			else:
-				# print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
-				if (datetime.datetime.today() - datetime.datetime.fromtimestamp(
-						ts / 1000)).seconds > self.tempo_refresh_user:
-					perm, uid = self._get_id_perm()
-					data.update({'user': uid,
-					             'permissoes': perm})
-				else:
-					data = data
-			return data
-
-		self.set_session_storage_callback()
+				data = data
+		return data
 
 	def add_download_callback(self, func, inp, states):
 		if isinstance(inp, list) and len(inp) != 1:
 			raise Exception("para usar downloads globais apenas um input deve ser passado")
-		ver.checa_compatibilidade(func, [], inp, states)
+		ver.checa_compatibilidade(func, inp, states)
 		self.download_funcs.append({'input': inp,
 		                            'states': states,
 		                            'function': func
@@ -302,7 +308,7 @@ class Application:
 	def add_session_storage_callback(self, func, inp, states):
 		if isinstance(inp, list) and len(inp) != 1:
 			raise Exception("para usar downloads globais apenas um input deve ser passado")
-		ver.checa_compatibilidade(func, [], inp, states)
+		ver.checa_compatibilidade(func, inp, states)
 		self.storage_funcs.append({'input': inp,
 		                           'states': states,
 		                           'function': func
@@ -319,9 +325,9 @@ class Application:
 		def alerta(*args):
 			# print(args)
 			ctx = dash.callback_context
-			list_inputs = [y for x in self.storage_funcs for y in x['input']]
-			list_states = [y for x in self.storage_funcs for y in x['states']]
-			args_completo = [i[0] + '.' + i[1] for i in list_inputs + list_states]
+			list_inputs2 = [y for x in self.storage_funcs for y in x['input']]
+			list_states2 = [y for x in self.storage_funcs for y in x['states']]
+			args_completo = [i[0] + '.' + i[1] for i in list_inputs2 + list_states2]
 			button_id = ctx.triggered[0]["prop_id"].split(".")[0]
 			triggered = [i for i in self.storage_funcs if i['input'][0][0] == button_id]
 			if len(triggered) > 0:
@@ -337,10 +343,11 @@ class Application:
 
 		list_inputs = [y for x in self.download_funcs for y in x['input']]
 		list_states = [y for x in self.download_funcs for y in x['states']]
-		# TODO encontrar maneira de fazer redirecionamento para rota via server - equivalente à webbrowser.open() - talvez clientside_callback + session stored filename?
+		# TODO encontrar maneira de fazer redirecionamento para rota via server - equivalente à webbrowser.open()
 		# @self.app.clientside_callback(dash.dependencies.Output(self.url_id, 'pathname'),
 		#                    [dash.dependencies.Input(i[0], i[1]) for i in list_inputs],
-		#                    [dash.dependencies.State(i[0], i[1]) for i in list_states] + [dash.dependencies.State(self.url_id, 'pathname')], prevent_initial_call=True)
+		#                    [dash.dependencies.State(i[0], i[1]) for i in list_states] +
+		#                    [dash.dependencies.State(self.url_id, 'pathname')], prevent_initial_call=True)
 		# def download(*args):
 		#     ctx = dash.callback_context
 		#     list_inputs = [y for x in self.download_funcs for y in x['input']]
@@ -482,8 +489,6 @@ class Application:
 
 			]
 			sidebar_items += details_section
-			# print(sidebar_items)
-		navbar = []
 		return sidebar_items
 
 	@staticmethod
@@ -522,7 +527,7 @@ class Application:
 	def _get_id_list(self):
 		return self.id_list
 
-	def _get_id_from_children(self, dicio):
+	def get_id_from_children(self, dicio):
 		list_ids = []
 		if isinstance(dicio, dict):
 			if 'props' in dicio.keys():
@@ -532,30 +537,30 @@ class Application:
 					if 'children' in dicio['props'].keys():
 						if dicio['props']['children'] is not None:
 							for child in list(dicio['props']['children']):
-								list_ids += self._get_id_from_children(child)
+								list_ids += self.get_id_from_children(child)
 		elif isinstance(dicio, list) and len(dicio) > 0:
 			for dic in dicio:
-				list_ids += self._get_id_from_children(dic)
+				list_ids += self.get_id_from_children(dic)
 		return list_ids
 
 	def _checa_validez_ids(self, page):
-		ids_page = page._get_id_list()
+		ids_page = page.get_id_list()
 		if len(set(ids_page).intersection(set(self.id_list))) > 0:
 			raise Exception(
-				"Encontrei ids na nova pagina {}/{} que ja estao sendo utilizadas por outras paginas: {}".format(
-					page.section, page.name, list(set(ids_page).intersection(set(self.id_list)))))
+				f"Encontrei ids na nova pagina {page.section}/{page.name} que "
+				f"ja estao sendo utilizadas por outras paginas: {list(set(ids_page).intersection(set(self.id_list)))}")
 
 	def _checa_validez_link(self, page):
 		link_page = page.link
 		if link_page in self.pages.keys():
 			raise Exception(
-				"O link da nova pagina {}/{} já está sendo utilizado pela pagina {}/{}".format(
-					page.section, page.name, self.pages[link_page]['section'], self.pages[link_page]['name']))
+				f"O link da nova pagina {page.section}/{page.name} já está sendo"
+				f" utilizado pela pagina {self.pages[link_page]['section']}/{self.pages[link_page]['name']}")
 
 	def add_alert_callback(self, func, inp, states, color="warning"):
 		if isinstance(inp, list) and len(inp) != 1:
 			raise Exception("para usar alertas globais apenas um input deve ser passado")
-		ver.checa_compatibilidade(func, [], inp, states)
+		ver.checa_compatibilidade(func, inp, states)
 		self.alert_funcs.append({'input': inp,
 		                         'states': states,
 		                         'function': func,
@@ -575,9 +580,9 @@ class Application:
 		def alerta(*args):
 			# print(args)
 			ctx = dash.callback_context
-			list_inputs = [y for x in self.alert_funcs for y in x['input']]
-			list_states = [y for x in self.alert_funcs for y in x['states']]
-			args_completo = [i[0] + '.' + i[1] for i in list_inputs + list_states]
+			list_inputs2 = [y for x in self.alert_funcs for y in x['input']]
+			list_states2 = [y for x in self.alert_funcs for y in x['states']]
+			args_completo = [i[0] + '.' + i[1] for i in list_inputs2 + list_states2]
 			button_id = ctx.triggered[0]["prop_id"].split(".")[0]
 			triggered = [i for i in self.alert_funcs if i['input'][0][0] == button_id]
 			if len(triggered) > 0:
