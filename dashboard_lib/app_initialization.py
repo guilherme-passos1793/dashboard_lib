@@ -16,6 +16,8 @@ import json
 import inspect
 from . import user_functions as user
 from io import BytesIO
+
+
 # TODO save THEME parameter for use in chart generation
 
 # TODO make a redirect function to the download route
@@ -30,7 +32,7 @@ class Application:
                  title='My app',
                  page_div_id='main_div', url_id='url', export_file_path=os.path.join(os.getcwd(), '/export'),
                  theme=dbc.themes.SLATE, id_main_alert='main_alert', session_store_id='session', user_class=None,
-                 tempo_refresh_user=600, default_page='/', tipo_server='host', server=None, base_layout=None):
+                 tempo_refresh_user=600, default_page='/', tipo_server='host', server=None, base_layout=None, navbar_type='h', navbar_id='navbar_id'):
         """
         creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
         :param host: ip and port to host app
@@ -52,29 +54,61 @@ class Application:
         :param theme: theme for bootstrap
         :type theme: str
         """
-        BASIC_LAYOUT = html.Div(
-            [html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href='/'),
-                                 dcc.Store(id='session', storage_type='session'),
-                                 html.Button(html.Img(src=os.path.split(assets_folder)[1] + '/menu_icon.png'),
-                                             className='navbar-toggler', id='toggle_sidebar',
-                                             style={'display': 'inline-block', 'text-align': 'center',
-                                                    'margin-bottom': '25px'})],
-                                style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
-                       dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000, dismissable=True,
-                                 color="warning"), dcc.Location(id='url', refresh=False), html.Div(id='main_div'),],
-                      style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
-                             'vertical-align': 'top'})],
-            style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
+        if navbar_type == 'v':
+            BASIC_LAYOUT = html.Div(
+                [html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href=default_page),
+                                     html.Button(html.Img(src=os.path.split(assets_folder)[1] + '/menu_icon.png'),
+                                                 className='navbar-toggler', id='toggle_sidebar',
+                                                 style={'display': 'inline-block', 'text-align': 'center',
+                                                        'margin-bottom': '25px'})],
+                                    style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
+                           dcc.Store(id='session', storage_type='session'),
+                           dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000, dismissable=True,
+                                     color="warning"), dcc.Location(id='url', refresh=False),
+                           html.Div(id='main_div'), ],
+                          style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
+                                 'vertical-align': 'top'})],
+                style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
+        elif navbar_type == 'h':
+            BASIC_LAYOUT = html.Div(
+                [html.Div([dbc.NavbarSimple([
+
+                                   ],
+                                            id=navbar_id,
+                                  brand=title,
+                    color='#333',
+                                  brand_href='/',
+                    dark=True
+                                  ),
+                           dcc.Store(id='session', storage_type='session'),
+                           dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000, dismissable=True,
+                                     color="warning"), dcc.Location(id='url', refresh=False),
+                           html.Div(id='main_div'), ],
+                          style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
+                                 'vertical-align': 'top'})],
+                style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
+        else:
+            BASIC_LAYOUT = html.Div(
+                [html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href='/'),],
+                                    style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
+                           dcc.Store(id='session', storage_type='session'),
+                           dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000, dismissable=True,
+                                     color="warning"), dcc.Location(id='url', refresh=False),
+                           html.Div(id='main_div'), ],
+                          style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
+                                 'vertical-align': 'top'})],
+                style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
         if base_layout is None:
             base_layout = BASIC_LAYOUT
         self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert
         if tipo_server == 'host':
-            self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
+            self.app = dash.Dash(__name__, assets_folder=assets_folder, external_stylesheets=[theme,
+                                                                                              'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                                  suppress_callback_exceptions=True)
         else:
             self.app = dash.Dash(__name__, server=server, assets_folder=assets_folder, external_stylesheets=[theme,
-                                                                                              'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
+                                                                                                             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'],
                                  suppress_callback_exceptions=True)
         self.app.title = title
         self.basic_layout = base_layout
@@ -83,22 +117,25 @@ class Application:
         self.pages = {}
         self.page_div_id = page_div_id
         self.url_id = url_id
+        self.navbar_id = navbar_id
         self.id_list = self._get_id_from_children(
             json.loads(json.dumps(self.basic_layout, cls=plotly.utils.PlotlyJSONEncoder)))
         if page_div_id not in self.id_list:
-            raise(Exception("Atributo page_div_id deve ser uma id contida em base_layout"))
+            raise (Exception("Atributo page_div_id deve ser uma id contida em base_layout"))
         if url_id not in self.id_list:
-            raise(Exception("Atributo url_id deve ser uma id contida em base_layout"))
+            raise (Exception("Atributo url_id deve ser uma id contida em base_layout"))
         if id_main_alert not in self.id_list:
-            raise(Exception("Atributo id_main_alert deve ser uma id contida em base_layout"))
+            raise (Exception("Atributo id_main_alert deve ser uma id contida em base_layout"))
         if session_store_id not in self.id_list:
-            raise(Exception("Atributo id_main_alert deve ser uma id contida em base_layout"))
+            raise (Exception("Atributo id_main_alert deve ser uma id contida em base_layout"))
         self.alert_funcs = []
         self.download_funcs = []
         self.session_store_id = session_store_id
         self.user_class = user_class
         server = self.app.server
         self.export_file_path = export_file_path
+        self.navbar_type = navbar_type
+
         @server.route('/download/<path:path>')
         def download_from_directory(path):
             out = BytesIO()
@@ -169,16 +206,48 @@ class Application:
         :return:
         :rtype:
         """
-        self._update_layout_for_sidebar()
+        if self.navbar_type == 'v':
+            self._update_layout_for_sidebar()
+
+            @self.app.callback(dash.dependencies.Output('main_sidebar', 'children'),
+                               [dash.dependencies.Input(self.url_id, 'pathname')],
+                               [dash.dependencies.State(self.session_store_id, 'data'),
+                                dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
+            def set_sidebar_items(path, data, ts):
+                data = atualiza_data_perm(self, data, ts)
+                sidebar_children = dbc.Nav(
+                    self._auto_generate_sidebar_items(data),
+                    vertical=True,
+                    pills=True,
+
+                )
+                return sidebar_children
+        elif self.navbar_type == 'h':
+            @self.app.callback(dash.dependencies.Output(self.navbar_id, 'children'),
+                               [dash.dependencies.Input(self.url_id, 'pathname')],
+                               [dash.dependencies.State(self.session_store_id, 'data'),
+                                dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
+            def set_navbar_items(path, data, ts):
+                data = atualiza_data_perm(self, data, ts)
+                navbar = self.auto_generate_navbar(data)
+                return navbar
 
         @self.app.callback([dash.dependencies.Output(self.page_div_id, 'children'),
-                            dash.dependencies.Output(self.session_store_id, 'data'),
-                            dash.dependencies.Output('main_sidebar', 'children')],
+                            dash.dependencies.Output(self.session_store_id, 'data')],
                            [dash.dependencies.Input(self.url_id, 'pathname')],
                            [dash.dependencies.State(self.session_store_id, 'data'),
                             dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
         def redireciona(path, data, ts):
             print(data, ts)
+            data = atualiza_data_perm(self, data, ts)
+
+            if path in self.pages.keys():
+                return self._get_page_layout(path, data)
+
+            else:
+                return self._get_page_layout('/', data)
+
+        def atualiza_data_perm(self, data, ts):
             if data is None:
                 perm, uid = self._get_id_perm()
                 data = {'user': uid,
@@ -192,18 +261,7 @@ class Application:
                             'permissoes': perm}
                 else:
                     data = data
-            sidebar_children = dbc.Nav(
-                self._auto_generate_sidebar_items(data),
-                vertical=True,
-                pills=True,
-
-            )
-
-            if path in self.pages.keys():
-                return (*self._get_page_layout(path, data), sidebar_children)
-
-            else:
-                return (*self._get_page_layout('/', data), sidebar_children)
+            return data
 
     def add_download_callback(self, func, inp, states):
         if isinstance(inp, list) and len(inp) != 1:
@@ -314,7 +372,8 @@ class Application:
         sidebar_items = [html.Button('X', id='toggle_sidebar_close',
                                      style={'backgroundColor': '#202020', 'text-align': 'right', 'color': 'white'}),
                          html.Br()]
-        df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section'], self.pages[i]['icon_class'], self.pages[i]['permissoes_suficientes']) for i in self.pages.keys()],
+        df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section'], self.pages[i]['icon_class'],
+                            self.pages[i]['permissoes_suficientes']) for i in self.pages.keys()],
                           columns=['link', 'name', 'section', 'icon_class', 'permissoes_suficientes'])
         df['PERMITIDO'] = df.apply(lambda row: self._checa_validez_permissao(row.permissoes_suficientes, data), axis=1)
         df = df.loc[df.PERMITIDO]
@@ -325,14 +384,45 @@ class Application:
             details_section = [html.Details([
                 html.Summary(html.Strong(section), style={'width': '90%'}),
                 html.Div([
-                    dbc.NavLink([html.I(className=pag['icon_class'], style={'margin-right': '0.4rem', 'font-size': '0.6rem'}), pag['name']], href=pag['link'],
-                                style={'backgroundColor': '#202020', 'padding': '0px', 'background-image': 'none',
-                                       'border': 0, 'margin-left': '1rem'}) for i, pag in pages.iterrows()
-                ] + [html.Br()]),
+                             dbc.NavLink([html.I(className=pag['icon_class'],
+                                                 style={'margin-right': '0.4rem', 'font-size': '0.6rem'}), pag['name']],
+                                         href=pag['link'],
+                                         style={'backgroundColor': '#202020', 'padding': '0px',
+                                                'background-image': 'none',
+                                                'border': 0, 'margin-left': '1rem'}) for i, pag in pages.iterrows()
+                         ] + [html.Br()]),
             ]),
             ]
             sidebar_items += details_section
         # print(sidebar_items)
+        return sidebar_items
+
+    def auto_generate_navbar(self, data):
+
+        sidebar_items = []
+        df = pd.DataFrame([(i, self.pages[i]['name'], self.pages[i]['section'], self.pages[i]['icon_class'],
+                            self.pages[i]['permissoes_suficientes']) for i in self.pages.keys()],
+                          columns=['link', 'name', 'section', 'icon_class', 'permissoes_suficientes'])
+        df['PERMITIDO'] = df.apply(lambda row: self._checa_validez_permissao(row.permissoes_suficientes, data), axis=1)
+        df = df.loc[df.PERMITIDO]
+        # print('')
+        df = df.loc[df.link != '/']
+        for section in df.section.drop_duplicates():
+            pages = df.loc[df.section == section]
+            details_section = [dbc.DropdownMenu([
+                dbc.DropdownMenuItem([dbc.NavLink([html.I(className=pag['icon_class'],
+                                                         style={'margin-right': '0.4rem', 'font-size': '0.6rem'}),
+                                                  pag['name']],
+                                                 href=pag['link'],
+                                                  style={'padding': '0.1rem'})
+                                      ]) for i, pag in
+                                     pages.iterrows()
+            ], label=section, color='primary', ),
+
+            ]
+            sidebar_items += details_section
+            print(sidebar_items)
+        navbar = []
         return sidebar_items
 
     @staticmethod
@@ -345,7 +435,7 @@ class Application:
         return dbc.Collapse(
 
             id='main_sidebar',
-            is_open=True,
+            is_open=False,
             className='mat-elevation-z0 mat-card col-md-2',
             style={'backgroundColor': '#202020', 'height': '-webkit-fill-available', 'margin': 0, 'position': 'fixed',
                    'zIndex': '999999', 'padding': '0px'}
@@ -437,4 +527,3 @@ class Application:
                 args_trig = [args[args_completo.index(a)] for a in args_triggered]
                 return triggered['function'](*args_trig), True, triggered['color']
             # return button_id, 'True', 'warning'
-
