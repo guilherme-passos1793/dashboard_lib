@@ -54,6 +54,7 @@ class Application:
         :param theme: theme for bootstrap
         :type theme: str
         """
+        self.default_page = default_page
         if navbar_type == 'v':
             BASIC_LAYOUT = html.Div(
                 [html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href=default_page),
@@ -77,7 +78,7 @@ class Application:
                                             id=navbar_id,
                                   brand=title,
                     color='#333',
-                                  brand_href='/',
+                                  brand_href=self.default_page,
                     dark=True
                                   ),
                            dcc.Store(id='session', storage_type='session'),
@@ -89,7 +90,7 @@ class Application:
                 style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
         else:
             BASIC_LAYOUT = html.Div(
-                [html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href='/'),],
+                [html.Div([html.Div([dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href=self.default_page),],
                                     style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
                            dcc.Store(id='session', storage_type='session'),
                            dbc.Alert(id='main_alert', is_open=False, fade=True, duration=10000, dismissable=True,
@@ -232,20 +233,30 @@ class Application:
                 navbar = self.auto_generate_navbar(data)
                 return navbar
 
-        @self.app.callback([dash.dependencies.Output(self.page_div_id, 'children'),
-                            dash.dependencies.Output(self.session_store_id, 'data')],
+        @self.app.callback(dash.dependencies.Output(self.session_store_id, 'data'),
+                           [dash.dependencies.Input(self.url_id, 'pathname')],
+                           [dash.dependencies.State(self.session_store_id, 'data'),
+                            dash.dependencies.State(self.session_store_id, 'modified_timestamp')]
+                           )
+        def recalcula_permissoes(path, data, ts):
+            # print(data, ts)
+            data = atualiza_data_perm(self, data, ts)
+
+            return data
+
+        @self.app.callback([dash.dependencies.Output(self.page_div_id, 'children')],
                            [dash.dependencies.Input(self.url_id, 'pathname')],
                            [dash.dependencies.State(self.session_store_id, 'data'),
                             dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
         def redireciona(path, data, ts):
-            print(data, ts)
+            # print(data, ts)
             data = atualiza_data_perm(self, data, ts)
 
             if path in self.pages.keys():
                 return self._get_page_layout(path, data)
 
             else:
-                return self._get_page_layout('/', data)
+                return self._get_page_layout(self.default_page, data)
 
         def atualiza_data_perm(self, data, ts):
             if data is None:
@@ -253,7 +264,7 @@ class Application:
                 data = {'user': uid,
                         'permissoes': perm}
             else:
-                print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
+                # print((datetime.datetime.today() - datetime.datetime.fromtimestamp(ts / 1000)).seconds)
                 if (datetime.datetime.today() - datetime.datetime.fromtimestamp(
                         ts / 1000)).seconds > self.tempo_refresh_user:
                     perm, uid = self._get_id_perm()
@@ -303,10 +314,10 @@ class Application:
         perm = self.pages[path]['permissoes_suficientes']
         status = self._checa_validez_permissao(perm, data)
         if status:
-            return self.pages[path]['layout'], data
+            return self.pages[path]['layout']
         else:
-            print(path)
-            return self._get_page_layout('/', data)
+            # print(path)
+            return self._get_page_layout(self.default_page, data)
 
     def _checa_validez_permissao(self, perm, data):
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
@@ -406,7 +417,7 @@ class Application:
         df['PERMITIDO'] = df.apply(lambda row: self._checa_validez_permissao(row.permissoes_suficientes, data), axis=1)
         df = df.loc[df.PERMITIDO]
         # print('')
-        df = df.loc[df.link != '/']
+        df = df.loc[df.link != self.default_page]
         for section in df.section.drop_duplicates():
             pages = df.loc[df.section == section]
             details_section = [dbc.DropdownMenu([
@@ -421,7 +432,7 @@ class Application:
 
             ]
             sidebar_items += details_section
-            print(sidebar_items)
+            # print(sidebar_items)
         navbar = []
         return sidebar_items
 
