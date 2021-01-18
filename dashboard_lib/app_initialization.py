@@ -108,7 +108,7 @@ class Application:
 
         if base_layout is None:
             base_layout = basic_layout
-        base_layout.children += [dcc.Interval(id='interval_refresh_premissoes', interval=1000)]
+        base_layout.children += [dcc.Interval(id='interval_refresh_premissoes', interval=tempo_refresh_user*1000)]
         self.interval_refresh_premissoes = 'interval_refresh_premissoes'
         self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert

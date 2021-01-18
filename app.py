@@ -8,7 +8,7 @@ import pandas as pd
 import time
 app = app_initialization.Application(host='192.168.0.47:'
                                           '8050', assets_folder=os.getcwd() + '/assets',
-                                     export_file_path=os.getcwd() + '/export', user_class=user_teste.UserTeste, navbar_type='v', tempo_refresh_user=30)
+                                     export_file_path=os.getcwd() + '/export', user_class=user_teste.UserTeste, navbar_type='h', tempo_refresh_user=30)
 
 lab = ['adsa', 'asbjdb', 'asjdoias']
 val = [50, 30, 20]
@@ -50,9 +50,9 @@ lay = [html.Div([dcc.Graph(figure=fig, style={'border-radius': '10px', 'display'
                  html.Button('btn_alerta2', id='btn_alerta2'),
                  html.Button('btn_alerta3', id='btn_alerta3')])]
 page = app_page.Page('/', [html.H1('INDEX')], app, name='index', permissoes_suficientes=[['all'], ['other', 'third']])
-page.add_download_callback(teste, [('btn_alerta', 'n_clicks')])
-page.add_alert_callback(teste2, [('btn_alerta2', 'n_clicks')], [('btn_alerta2', 'n_clicks_timestamp')])
-page.add_alert_callback(teste3, [('btn_alerta3', 'n_clicks')], [('btn_alerta3', 'n_clicks_timestamp')])
+# page.add_download_callback(teste, [('btn_alerta', 'n_clicks')])
+# page.add_alert_callback(teste2, [('btn_alerta2', 'n_clicks')], [('btn_alerta2', 'n_clicks_timestamp')])
+# page.add_alert_callback(teste3, [('btn_alerta3', 'n_clicks')], [('btn_alerta3', 'n_clicks_timestamp')])
 page.add_callback(teste3, ('btn_alerta3', 'children'), [('btn_alerta3', 'n_clicks')], [('btn_alerta3', 'n_clicks_timestamp')])
 app.add_page(page)
 page = app_page.Page(f'/asd', lay, app, f'pagesad')
