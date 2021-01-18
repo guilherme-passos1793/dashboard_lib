@@ -393,8 +393,8 @@ class Application:
                 return data
             return data
 
-        self.add_session_storage_callback(download, [(i[0], i[1]) for i in list_inputs],
-                                          [(i[0], i[1]) for i in list_states] + [(self.session_store_id, 'data')])
+        # self.add_session_storage_callback(download, [(i[0], i[1]) for i in list_inputs],
+        #                                   [(i[0], i[1]) for i in list_states] + [(self.session_store_id, 'data')])
 
     def _get_page_layout(self, path, data):
         perm = self.pages[path]['permissoes_suficientes']
