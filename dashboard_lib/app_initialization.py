@@ -261,7 +261,7 @@ class Application:
                                           [(self.session_store_id, 'data'),
                                            (self.session_store_id, 'modified_timestamp')])
 
-        @self.app.callback([dash.dependencies.Output(self.page_div_id, 'children')],
+        @self.app.callback(dash.dependencies.Output(self.page_div_id, 'children'),
                            [dash.dependencies.Input(self.url_id, 'pathname')],
                            [dash.dependencies.State(self.session_store_id, 'data'),
                             dash.dependencies.State(self.session_store_id, 'modified_timestamp')])
