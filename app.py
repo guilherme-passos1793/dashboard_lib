@@ -8,7 +8,7 @@ import pandas as pd
 import time
 app = app_initialization.Application(host='192.168.0.47:'
                                           '8050', assets_folder=os.getcwd() + '/assets',
-                                     export_file_path=os.getcwd() + '/export', user_class=user_teste.UserTeste, navbar_type='h', tempo_refresh_user=0)
+                                     export_file_path=os.getcwd() + '/export', user_class=user_teste.UserTeste, navbar_type='h', tempo_refresh_user=30)
 
 lab = ['adsa', 'asbjdb', 'asjdoias']
 val = [50, 30, 20]
@@ -45,7 +45,7 @@ lay = [html.Div([dcc.Graph(figure=fig, style={'border-radius': '10px', 'display'
                                  style = {'height': '10px', 'width': '10px' ,'color': 'red', 'fontSize': '3 rem', 'paddingLeft': '1 %'}),
                           href='/'),
                  tab,
-                 html.Strong('teste'),
+                 html.Strong('teste', id='testecb'),
                  html.Button('btn_alerta', id='btn_alerta', n_clicks=None),
                  html.Button('btn_alerta2', id='btn_alerta2'),
                  html.Button('btn_alerta3', id='btn_alerta3')])]
@@ -69,8 +69,6 @@ for i in range(5):
 
 
 app.set_page_callback()
-app.set_alert_callback()
-app.set_download_callbacks()
 if __name__ == '__main__':
     app.start()
 

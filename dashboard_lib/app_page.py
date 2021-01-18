@@ -62,7 +62,7 @@ class Page:
 		self.app.add_alert_callback(func, inputs, states, color=color)
 
 	def add_download_callback(self, func, inputs, states=None):
-		raise Exception('Método add_download_callback ainda não implementado!')
+		# raise Exception('Método add_download_callback ainda não implementado!')
 		if states is None:
 			states = []
 		self.app.add_download_callback(func, inputs, states)
