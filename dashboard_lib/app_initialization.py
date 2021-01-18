@@ -35,7 +35,7 @@ class Application:
                  user_class=None,
                  tempo_refresh_user: int = 600, default_page: str = '/', tipo_server: str = 'host',
                  server: flask.Flask = None, base_layout: dash.development.base_component.Component = None,
-                 navbar_type: str = 'h', navbar_id: str = 'navbar_id'):
+                 navbar_type: str = 'v', navbar_id: str = 'navbar_id'):
         """
         creates an Application, based on dash and a couple of quality of life imporvements, paired with Page class
         :param host: ip and port to host app
@@ -392,9 +392,9 @@ class Application:
 
                 return data
             return data
-
-        # self.add_session_storage_callback(download, [(i[0], i[1]) for i in list_inputs],
-        #                                   [(i[0], i[1]) for i in list_states] + [(self.session_store_id, 'data')])
+        if len(list_inputs + list_states) > 0:
+            self.add_session_storage_callback(download, [(i[0], i[1]) for i in list_inputs],
+                                              [(i[0], i[1]) for i in list_states] + [(self.session_store_id, 'data')])
 
     def _get_page_layout(self, path, data):
         perm = self.pages[path]['permissoes_suficientes']
@@ -601,24 +601,26 @@ class Application:
         list_inputs = [y for x in self.alert_funcs for y in x['input']]
         list_states = [y for x in self.alert_funcs for y in x['states']]
 
-        @self.app.callback([dash.dependencies.Output(self.id_main_alert, 'children'),
-                            dash.dependencies.Output(self.id_main_alert, 'is_open'),
-                            dash.dependencies.Output(self.id_main_alert, 'color')],
-                           [dash.dependencies.Input(i[0], i[1]) for i in list_inputs],
-                           [dash.dependencies.State(i[0], i[1]) for i in list_states])
-        def alerta(*args):
-            # print(args)
-            ctx = dash.callback_context
-            list_inputs2 = [y for x in self.alert_funcs for y in x['input']]
-            list_states2 = [y for x in self.alert_funcs for y in x['states']]
-            args_completo = [i[0] + '.' + i[1] for i in list_inputs2 + list_states2]
-            button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-            triggered = [i for i in self.alert_funcs if i['input'][0][0] == button_id]
-            if len(triggered) > 0:
-                triggered = triggered[0]
-                inputs_triggered = triggered['input'][0][0] + '.' + triggered['input'][0][1]
-                states_triggered = [i[0] + '.' + i[1] for i in triggered['states']]
-                args_triggered = [inputs_triggered] + states_triggered
-                args_trig = [args[args_completo.index(a)] for a in args_triggered]
-                return triggered['function'](*args_trig), True, triggered['color']
-            # return button_id, 'True', 'warning'
+        if len(list_inputs + list_states) > 0:
+
+            @self.app.callback([dash.dependencies.Output(self.id_main_alert, 'children'),
+                                dash.dependencies.Output(self.id_main_alert, 'is_open'),
+                                dash.dependencies.Output(self.id_main_alert, 'color')],
+                               [dash.dependencies.Input(i[0], i[1]) for i in list_inputs],
+                               [dash.dependencies.State(i[0], i[1]) for i in list_states])
+            def alerta(*args):
+                # print(args)
+                ctx = dash.callback_context
+                list_inputs2 = [y for x in self.alert_funcs for y in x['input']]
+                list_states2 = [y for x in self.alert_funcs for y in x['states']]
+                args_completo = [i[0] + '.' + i[1] for i in list_inputs2 + list_states2]
+                button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+                triggered = [i for i in self.alert_funcs if i['input'][0][0] == button_id]
+                if len(triggered) > 0:
+                    triggered = triggered[0]
+                    inputs_triggered = triggered['input'][0][0] + '.' + triggered['input'][0][1]
+                    states_triggered = [i[0] + '.' + i[1] for i in triggered['states']]
+                    args_triggered = [inputs_triggered] + states_triggered
+                    args_trig = [args[args_completo.index(a)] for a in args_triggered]
+                    return triggered['function'](*args_trig), True, triggered['color']
+                # return button_id, 'True', 'warning'
