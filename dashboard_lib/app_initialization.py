@@ -17,7 +17,6 @@ import inspect
 from . import user_functions as user
 from io import BytesIO
 
-
 # TODO save THEME parameter for use in chart generation
 
 # TODO make a redirect function to the download route
@@ -71,44 +70,51 @@ class Application:
                      dcc.Store(id=session_store_id, storage_type='session'),
                      dbc.Alert(id=id_main_alert, is_open=False, fade=True, duration=10000, dismissable=True,
                                color="warning"), dcc.Location(id='url', refresh=False),
-                     html.Div(id=page_div_id), ],
+                     html.Div(id=page_div_id, style={'padding': '2rem'}), ],
                     style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
                            'vertical-align': 'top'})],
                 style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
         elif navbar_type == 'h':
-            basic_layout = html.Div(
-                [html.Div([dbc.NavbarSimple([
+            navbar = dbc.NavbarSimple([
 
-                ],
-                    id=navbar_id,
-                    brand=title,
-                    color='#333',
-                    brand_href=self.default_page,
-                    dark=True
-                ),
-                    dcc.Store(id=session_store_id, storage_type='session'),
-                    dbc.Alert(id=id_main_alert, is_open=False, fade=True, duration=10000, dismissable=True,
-                              color="warning"), dcc.Location(id='url', refresh=False),
-                    html.Div(id=page_div_id), ],
-                    style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
-                           'vertical-align': 'top'})],
+            ],
+                id=navbar_id,
+                brand=title,
+                color='#333',
+                brand_href=self.default_page,
+                dark=True
+            )
+            navbar = dbc.Navbar(
+                [dcc.Link(dbc.Row(dbc.Col([html.Span(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png')),
+                                           html.Span(dbc.NavbarBrand(title))]), align='center'), href='/'),
+                 dbc.Collapse(dbc.Nav(id=navbar_id, navbar=True, className='ml-auto'), navbar=True,
+                              style={'paddingRight': '3rem'})], dark=True,
+                color='#333')
+            basic_layout = html.Div(
+                [html.Div([navbar,
+                           dcc.Store(id=session_store_id, storage_type='session'),
+                           dbc.Alert(id=id_main_alert, is_open=False, fade=True, duration=10000, dismissable=True,
+                                     color="warning"), dcc.Location(id='url', refresh=False),
+                           html.Div(id=page_div_id, style={'padding': '2rem'}), ],
+                          style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
+                                 'vertical-align': 'top'})],
                 style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
         else:
             basic_layout = html.Div(
                 [html.Div([html.Div(
                     [dcc.Link(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png'), href=self.default_page), ],
                     style={'backgroundColor': 'black', 'width': '-webkit-fill-available'}),
-                           dcc.Store(id=session_store_id, storage_type='session'),
-                           dbc.Alert(id=id_main_alert, is_open=False, fade=True, duration=10000, dismissable=True,
-                                     color="warning"), dcc.Location(id='url', refresh=False),
-                           html.Div(id=page_div_id), ],
-                          style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
-                                 'vertical-align': 'top'})],
+                    dcc.Store(id=session_store_id, storage_type='session'),
+                    dbc.Alert(id=id_main_alert, is_open=False, fade=True, duration=10000, dismissable=True,
+                              color="warning"), dcc.Location(id='url', refresh=False),
+                    html.Div(id=page_div_id, style={'padding': '2rem'}), ],
+                    style={'display': 'inline-block', 'height': '100%', 'width': '-webkit-fill-available',
+                           'vertical-align': 'top'})],
                 style={'height': '100%', 'vertical-align': 'top', 'width': '-webkit-fill-available'})
 
         if base_layout is None:
             base_layout = basic_layout
-        base_layout.children += [dcc.Interval(id='interval_refresh_premissoes', interval=tempo_refresh_user*1000)]
+        base_layout.children += [dcc.Interval(id='interval_refresh_premissoes', interval=tempo_refresh_user * 1000)]
         self.interval_refresh_premissoes = 'interval_refresh_premissoes'
         self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert
@@ -392,6 +398,7 @@ class Application:
 
                 return data
             return data
+
         if len(list_inputs + list_states) > 0:
             self.add_session_storage_callback(download, [(i[0], i[1]) for i in list_inputs],
                                               [(i[0], i[1]) for i in list_states] + [(self.session_store_id, 'data')])
