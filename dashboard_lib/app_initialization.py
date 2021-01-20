@@ -86,8 +86,8 @@ class Application:
             )
             navbar = dbc.Navbar(
                 [dcc.Link(dbc.Row(dbc.Col([html.Span(html.Img(src=os.path.split(assets_folder)[1] + '/logo.png')),
-                                           html.Span(dbc.NavbarBrand(title))]), align='center',
-                                  style={'display': 'flex', 'align-items': 'center'}), href='/'),
+                                           html.Span(dbc.NavbarBrand(title))],
+                                  style={'display': 'flex', 'align-items': 'center'}), align='center'), href='/'),
                  dbc.Collapse(dbc.Nav(id=navbar_id, navbar=True, className='ml-auto'), navbar=True,
                               style={'paddingRight': '3rem'})], dark=True,
                 color='#333')
