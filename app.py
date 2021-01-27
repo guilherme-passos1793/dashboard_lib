@@ -6,6 +6,8 @@ from dashboard_lib import figures
 import os
 import pandas as pd
 import time
+#
+
 app = app_initialization.Application(host='192.168.0.47:'
                                           '8050', assets_folder=os.getcwd() + '/assets',
                                      export_file_path=os.getcwd() + '/export', user_class=user_teste.UserTeste, navbar_type='h', tempo_refresh_user=30)
