@@ -68,7 +68,7 @@ def create_conditional_style(df):
 		if name_length == 0 or math.isnan(name_length):
 			pixel = 2
 		else:
-			pixel = round(name_length * 0.7)
+			pixel = round(name_length * 0.8) + 1
 
 		pixel = str(pixel) + "rem"
 		style.append({'if': {'column_id': col}, 'minWidth': pixel})
