@@ -17,7 +17,7 @@ class Chart:
 
 
 class DashChart:
-	def __init__(self, bgcolor='#484e53', pagebgcolor='#32383e', textcolor='#ffffff', height=300, width=400):
+	def __init__(self, bgcolor='#484e53', pagebgcolor='#32383e', textcolor='#ffffff', height=None, width=None):
 		"""
 
         :param bgcolor: cor do bg interno
