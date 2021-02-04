@@ -43,8 +43,8 @@ def teste3(n_clicks, timestamp):
 
 
 lay = [html.Div([dcc.Graph(figure=fig, style={'border-radius': '10px', 'display': 'inline-block', 'margin': '5px', 'width': '15rem'}),
-                 dcc.Link(html.I(id='home - button', n_clicks = 0, className ='fas fa-balance-scale',
-                                 style = {'height': '10px', 'width': '10px' ,'color': 'red', 'fontSize': '3 rem', 'paddingLeft': '1 %'}),
+                 dcc.Link(html.I(id='home - button', n_clicks=0, className='fas fa-balance-scale',
+                                 style = {'height': '10px', 'width': '10px', 'color': 'red', 'fontSize': '3 rem', 'paddingLeft': '1 %'}),
                           href='/'),
                  tab,
                  html.Strong('teste', id='testecb'),

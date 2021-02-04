@@ -1,9 +1,11 @@
 from plotly import graph_objects as go
 import matplotlib.pyplot as plt
-
+import matplotlib.ticker as ticker
 fig = go.Figure()
 dados = ['Barra', [1, 2, 3, 4], [200, 150, 12, 250], '#cccccc', 'y', 'name']
 
+def my_formatter_fun(y, p):
+	return '{:,.0f}'.format(y).replace('.', ';').replace(',', '.').replace(';', ',')
 
 class Chart:
 	def __init__(self, tipo='plotly'):
@@ -96,46 +98,62 @@ class DashChart:
 				self.fig.update_layout({'yaxis' + eixo_y[1:]: {'title': title}})
 
 
+
+
+
 class MplibChart:
-	def __init__(self):
+	def __init__(self, legend_pos='top', legend_width=0.41, n_cols_leg=2):
 		self.manager = 'mplib'
-		self.fig = plt.Figure()
+		self.fig, self.host = plt.subplots()
+		self.par1 = None
+		self.par2 = None
+		self.legend_position = legend_pos
+		self.legend_width = legend_width
+		self.n_cols_leg = n_cols_leg
+		self.lines = []
+
 
 	def adiciona_dados(self, list_dados):
 		tipo = list_dados[0]
 		cor = list_dados[3]
 		eixo_y = list_dados[4]
 		axis_name = list_dados[5]
-
-		if len(self.fig.axes) > 0:
-			if eixo_y[1:] == '':
-				ax = self.fig.axes[0]
-			elif int(eixo_y[1:]) + 1 > len(self.fig.axes):
-				ax = self.fig.axes[0].twinx()
-			else:
-				ax = self.fig.axes[int(eixo_y[1:])]
+		if eixo_y[1:] == '':
+			ax = self.host
+		elif int(eixo_y[1:]) + 1 > len(self.fig.axes):
+			if self.par1 is None:
+				self.par1 = self.host.twinx()
+			ax = self.par1
 		else:
-			ax = self.fig.subplots()
+			if self.par2 is None:
+				self.par2 = self.host.twinx()
+			ax = self.par2
 		if tipo == 'Barra':
-			ax.bar(list_dados[1], list_dados[2], color=cor, label=axis_name)
+			p = ax.bar(list_dados[1], list_dados[2], color=cor, label=axis_name)
+			self.lines.append(p)
 		elif tipo == 'Linha':
-			ax.plot(list_dados[1], list_dados[2], color=cor, label=axis_name)
+			p = ax.plot(list_dados[1], list_dados[2], color=cor, label=axis_name)
+			self.lines.append(p[0])
 		elif tipo == 'Pontos':
-			ax.scatter(list_dados[1], list_dados[2], color=cor, label=axis_name)
+			p = ax.scatter(list_dados[1], list_dados[2], color=cor, label=axis_name)
+			self.lines.append(p)
 		elif tipo == 'Pizza':
-			ax.pie(labels=list_dados[1], values=list_dados[2], colors=cor)
+			p = ax.pie(labels=list_dados[1], values=list_dados[2], colors=cor)
+			self.lines.append(p)
 		return self.fig
 
-	def altera_limites_eixo(self, eixo_y='y', ymin=None, ymax=None):
 
+	def altera_limites_eixo(self, eixo_y='y', ymin=None, ymax=None):
 		if eixo_y[1:] == '':
 			ax = self.fig.axes[0]
 		else:
 			ax = self.fig.axes[eixo_y[1:]]
 		ax.set_ylim(ymin=ymin, ymax=ymax)
 
+
 	def set_title(self, title):
 		self.fig.suptitle(title)
+
 
 	def set_yaxis_title(self, eixo_y, title):
 		if eixo_y[1:] == '':
@@ -143,3 +161,36 @@ class MplibChart:
 		else:
 			ax = self.fig.axes[eixo_y[1:]]
 		ax.title = title
+
+
+	def set_legend(self, legend_position=None):
+		self.host.legend(self.lines, [l.get_label() for l in self.lines])
+		for a in plt.gcf().axes:
+			a.get_yaxis().set_major_formatter(ticker.FuncFormatter(my_formatter_fun))
+		self.host.xaxis.set_major_locator(plt.MaxNLocator(5))
+
+
+	# if legend_position is None:
+	#     legend_position = self.legend_position
+	# if legend_position == 'right':
+	#     bbox_to_anchor = (1.1, 0.3)
+	#     self.host.legend(self.lines, [l.get_label() for l in self.lines], bbox_to_anchor=bbox_to_anchor)
+	# elif legend_position == 'left':
+	#     bbox_to_anchor = (-0.2, 0.3)
+	#     self.host.legend(self.lines, [l.get_label() for l in self.lines], bbox_to_anchor=bbox_to_anchor)
+	#
+	# elif legend_position == 'top':
+	#     bbox_to_anchor = (0.5 - self.legendwidth, 1.1, self.legendwidth, 0)
+	#     self.host.legend(self.lines, [l.get_label() for l in self.lines], bbox_to_anchor=bbox_to_anchor, ncol=self.n_cols_leg, mode="expand", borderaxespad=0.)
+	#
+	# elif legend_position == 'bottom':
+	#     bbox_to_anchor = (0.5 - self.legendwidth/2, -0.1, self.legendwidth, 0)
+	#     self.host.legend(self.lines, [l.get_label() for l in self.lines], bbox_to_anchor=bbox_to_anchor, ncol=self.n_cols_leg, mode="expand", borderaxespad=0.)
+	def save_fig(self, path):
+		if path == '':
+			plt.show()
+		else:
+			plt.savefig(path, bbox_inches='tight')
+
+
+
