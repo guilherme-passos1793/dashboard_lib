@@ -119,7 +119,7 @@ class Application:
         self.interval_refresh_premissoes = 'interval_refresh_premissoes'
         self.tempo_refresh_user = tempo_refresh_user
         self.id_main_alert = id_main_alert
-        css_files = [assets_folder + f for f in os.listdir(assets_folder) if '.css' in f]
+        css_files = [assets_folder + '/' + f for f in os.listdir(assets_folder) if '.css' in f]
         if tipo_server == 'host':
             self.app = dash.Dash(__name__,
                                  assets_folder=assets_folder,
