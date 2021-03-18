@@ -415,6 +415,7 @@ class Application:
             return self._get_page_layout(self.default_page, data)
 
     def _checa_validez_permissao(self, perm, data):
+        has_permission = False
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
             perm_user = set(data['permissoes'])
             if perm is not None:
@@ -424,39 +425,31 @@ class Application:
                         if isinstance(permission_group, str):
                             if {permission_group}.issubset(perm_user):
                                 # print('usuario permitido!')
-                                return True
-                            else:
-                                # print('usuario sem permissao!')
-                                return False
+                                has_permission = True
                         elif isinstance(permission_group, list):
                             if set(permission_group).issubset(perm_user):
                                 # print('usuario permitido!')
-                                return True
-                            else:
-                                # print('usuario sem permissao!')
-                                return False
+                                has_permission = True
                         else:
                             print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
                                   'com permissao unica')
-                            return False
+                            has_permission = False
 
                 elif isinstance(perm, str):
                     if {perm}.issubset(perm_user):
                         # print('usuario permitido str!')
-                        return True
-                    else:
-                        # print('usuario sem permissao!')
-                        return False
+                        has_permission = True
                 else:
                     print('pagina mal configurada! permissoes tem que ser lista de permissoes ou string'
                           'com permissao unica')
-                    return False
+                    has_permission = False
             else:
                 # print('page n requer permissao!')
-                return True
+                has_permission = True
         else:
             # print('app nao usa classe user')
-            return True
+            has_permission = True
+        return has_permission
 
     def _get_id_perm(self):
         if inspect.isclass(self.user_class) and issubclass(self.user_class, user.User):
