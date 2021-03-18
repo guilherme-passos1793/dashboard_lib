@@ -9,7 +9,7 @@ if os.path.isfile(requirementPath):
 print(install_requires)
 setup(
     name='dashboard_lib',
-    version='0.0.1',
+    version='0.0.2',
     description='My private package from private github repo',
     url='git@github.com:guilherme-passos1793/dashboard_lib2.git',
     author='Guilherme Passos',
