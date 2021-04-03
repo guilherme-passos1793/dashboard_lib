@@ -285,7 +285,7 @@ class Application:
 
         self.set_alert_callback()
         self.set_download_callbacks()
-        self.set_session_storage_callback()
+        # self.set_session_storage_callback()
 
     def atualiza_data_perm(self, data, ts):
         if data is None:
